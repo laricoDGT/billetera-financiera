@@ -1,0 +1,91 @@
+<!-- ==================== 3. REGISTER PAGE ==================== -->
+<div
+  id="register-page"
+  class="hidden min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-600 p-4"
+>
+  <div
+    class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-8 fade-in"
+  >
+    <div class="text-center mb-8">
+      <div
+        class="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4"
+      >
+        <span class="text-white font-bold text-2xl">F</span>
+      </div>
+      <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+        Crear cuenta
+      </h2>
+      <p class="text-gray-600 dark:text-gray-300 mt-2">Comienza gratis hoy</p>
+    </div>
+
+    <form class="space-y-4">
+      <div>
+        <label
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >Nombre completo</label
+        >
+        <input
+          type="text"
+          placeholder="Juan Pérez"
+          class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+        />
+      </div>
+      <div>
+        <label
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >Email</label
+        >
+        <input
+          type="email"
+          placeholder="tu@email.com"
+          class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+        />
+      </div>
+      <div>
+        <label
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >Contraseña</label
+        >
+        <input
+          type="password"
+          placeholder="••••••••"
+          class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+        />
+      </div>
+      <div>
+        <label class="flex items-center">
+          <input
+            type="checkbox"
+            class="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+          />
+          <span class="ml-2 text-sm text-gray-600 dark:text-gray-300"
+            >Acepto los términos y condiciones</span
+          >
+        </label>
+      </div>
+      <button
+        type="button"
+        onclick="showPage('dashboard-page')"
+        class="w-full bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 transform hover:scale-105 transition shadow-lg"
+      >
+        Crear Cuenta
+      </button>
+    </form>
+
+    <div class="mt-6 text-center">
+      <p class="text-gray-600 dark:text-gray-300">
+        ¿Ya tienes cuenta? <button
+          onclick="showPage('login-page')"
+          class="text-purple-600 font-semibold hover:text-purple-700"
+          >Inicia sesión</button>
+      </p>
+    </div>
+    <div class="mt-4 text-center">
+      <button
+        onclick="showPage('landing-page')"
+        class="text-gray-500 hover:text-gray-700 text-sm"
+        >← Volver al inicio</button
+      >
+    </div>
+  </div>
+</div>

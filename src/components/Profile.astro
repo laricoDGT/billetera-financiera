@@ -1,0 +1,291 @@
+<!-- ==================== 10. PROFILE PAGE ==================== -->
+<div id="profile-page" class="hidden min-h-screen bg-gray-50 dark:bg-slate-900">
+  <nav class="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-4">
+          <button
+            onclick="showPage('dashboard-page')"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+          </button>
+          <h1 class="text-xl font-bold text-gray-900 dark:text-white">
+            Mi Perfil
+          </h1>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- Profile Header -->
+    <div
+      class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-8 border border-gray-200 dark:border-slate-700 mb-6"
+    >
+      <div
+        class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6"
+      >
+        <div class="relative">
+          <div
+            class="w-24 h-24 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-3xl font-bold text-white"
+          >
+            JP
+          </div>
+          <button
+            class="absolute bottom-0 right-0 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white hover:bg-indigo-700"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div class="flex-1 text-center sm:text-left">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Juan Pérez
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400">juan.perez@email.com</p>
+          <div
+            class="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start"
+          >
+            <span
+              class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 rounded-full text-sm font-medium"
+              >Usuario Premium</span
+            >
+            <span
+              class="px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-600 rounded-full text-sm font-medium"
+              >Verificado</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Sections -->
+    <div class="space-y-6">
+      <!-- Personal Information -->
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
+      >
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Información Personal
+        </h3>
+        <div class="space-y-4">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >Nombre</label
+              >
+              <input
+                type="text"
+                value="Juan"
+                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >Apellido</label
+              >
+              <input
+                type="text"
+                value="Pérez"
+                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Email</label
+            >
+            <input
+              type="email"
+              value="juan.perez@email.com"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Teléfono</label
+            >
+            <input
+              type="tel"
+              value="+51 987 654 321"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <button
+            class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
+            >Guardar Cambios</button
+          >
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
+      >
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Seguridad
+        </h3>
+        <div class="space-y-4">
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Contraseña Actual</label
+            >
+            <input
+              type="password"
+              placeholder="••••••••"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Nueva Contraseña</label
+            >
+            <input
+              type="password"
+              placeholder="••••••••"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Confirmar Nueva Contraseña</label
+            >
+            <input
+              type="password"
+              placeholder="••••••••"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <button
+            class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
+            >Cambiar Contraseña</button
+          >
+        </div>
+      </div>
+
+      <!-- Preferences -->
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
+      >
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Preferencias
+        </h3>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-medium text-gray-900 dark:text-white">
+                Notificaciones por Email
+              </h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Recibe actualizaciones en tu correo
+              </p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer" />
+              <div
+                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
+              >
+              </div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-medium text-gray-900 dark:text-white">
+                Notificaciones Push
+              </h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Alertas en tiempo real
+              </p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer" />
+              <div
+                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
+              >
+              </div>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-medium text-gray-900 dark:text-white">
+                Recordatorios Automáticos
+              </h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Avisos de pagos próximos
+              </p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer" />
+              <div
+                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
+              >
+              </div>
+            </label>
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >Moneda Predeterminada</label
+            >
+            <select
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            >
+              <option>USD - Dólar</option>
+              <option>EUR - Euro</option>
+              <option selected>PEN - Sol</option>
+              <option>MXN - Peso Mexicano</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div
+        class="bg-red-50 dark:bg-red-900/10 rounded-2xl shadow-sm p-6 border border-red-200 dark:border-red-900/20"
+      >
+        <h3 class="text-lg font-semibold text-red-900 dark:text-red-400 mb-4">
+          Zona de Peligro
+        </h3>
+        <div class="space-y-3">
+          <button
+            class="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition font-medium"
+            >Eliminar Cuenta</button
+          >
+          <p class="text-sm text-red-700 dark:text-red-400">
+            Esta acción es permanente y no se puede deshacer.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

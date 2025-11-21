@@ -1,0 +1,329 @@
+<!-- ==================== 7. CATEGORIES PAGE ==================== -->
+<div
+  id="categories-page"
+  class="hidden min-h-screen bg-gray-50 dark:bg-slate-900"
+>
+  <nav class="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-4">
+          <button
+            onclick="showPage('dashboard-page')"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+          </button>
+          <h1 class="text-xl font-bold text-gray-900 dark:text-white">
+            Categorías
+          </h1>
+        </div>
+        <button
+          onclick="showModal('add-category')"
+          class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>Nueva</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- Summary -->
+    <div
+      class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700 mb-6"
+    >
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        Gastos por Categoría - Noviembre
+      </h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center space-x-2">
+                  <span class="text-2xl">🍔</span>
+                  <span class="font-medium text-gray-900 dark:text-white"
+                    >Alimentación</span
+                  >
+                </div>
+                <span class="font-bold text-gray-900 dark:text-white"
+                  >$840.00</span
+                >
+              </div>
+              <div
+                class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3"
+              >
+                <div class="bg-indigo-600 h-3 rounded-full" style="width: 45%">
+                </div>
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                45% del presupuesto
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center space-x-2">
+                  <span class="text-2xl">🚗</span>
+                  <span class="font-medium text-gray-900 dark:text-white"
+                    >Transporte</span
+                  >
+                </div>
+                <span class="font-bold text-gray-900 dark:text-white"
+                  >$620.00</span
+                >
+              </div>
+              <div
+                class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3"
+              >
+                <div class="bg-green-600 h-3 rounded-full" style="width: 62%">
+                </div>
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                62% del presupuesto
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center space-x-2">
+                  <span class="text-2xl">🎮</span>
+                  <span class="font-medium text-gray-900 dark:text-white"
+                    >Entretenimiento</span
+                  >
+                </div>
+                <span class="font-bold text-gray-900 dark:text-white"
+                  >$380.00</span
+                >
+              </div>
+              <div
+                class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3"
+              >
+                <div class="bg-purple-600 h-3 rounded-full" style="width: 38%">
+                </div>
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                38% del presupuesto
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center space-x-2">
+                  <span class="text-2xl">🏠</span>
+                  <span class="font-medium text-gray-900 dark:text-white"
+                    >Hogar</span
+                  >
+                </div>
+                <span class="font-bold text-gray-900 dark:text-white"
+                  >$980.00</span
+                >
+              </div>
+              <div
+                class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3"
+              >
+                <div class="bg-orange-600 h-3 rounded-full" style="width: 82%">
+                </div>
+              </div>
+              <div class="text-xs text-red-500 mt-1">
+                ⚠️ 82% del presupuesto
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center space-x-2">
+                  <span class="text-2xl">💊</span>
+                  <span class="font-medium text-gray-900 dark:text-white"
+                    >Salud</span
+                  >
+                </div>
+                <span class="font-bold text-gray-900 dark:text-white"
+                  >$220.00</span
+                >
+              </div>
+              <div
+                class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3"
+              >
+                <div class="bg-blue-600 h-3 rounded-full" style="width: 22%">
+                </div>
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                22% del presupuesto
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center space-x-2">
+                  <span class="text-2xl">👕</span>
+                  <span class="font-medium text-gray-900 dark:text-white"
+                    >Ropa</span
+                  >
+                </div>
+                <span class="font-bold text-gray-900 dark:text-white"
+                  >$420.00</span
+                >
+              </div>
+              <div
+                class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3"
+              >
+                <div class="bg-pink-600 h-3 rounded-full" style="width: 84%">
+                </div>
+              </div>
+              <div class="text-xs text-red-500 mt-1">
+                ⚠️ 84% del presupuesto
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Cards -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700 hover:shadow-lg transition"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-3xl">🍔</span>
+            <div>
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                Alimentación
+              </h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                28 transacciones
+              </p>
+            </div>
+          </div>
+          <button class="text-gray-400 hover:text-gray-600">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">
+              $840
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              de $1,200
+            </div>
+          </div>
+          <div class="text-right">
+            <span
+              class="text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 rounded-full font-medium"
+              >45%</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700 hover:shadow-lg transition"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-3xl">🚗</span>
+            <div>
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                Transporte
+              </h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                15 transacciones
+              </p>
+            </div>
+          </div>
+          <button class="text-gray-400 hover:text-gray-600">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">
+              $620
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              de $1,000
+            </div>
+          </div>
+          <div class="text-right">
+            <span
+              class="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-600 rounded-full font-medium"
+              >62%</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700 hover:shadow-lg transition"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <span class="text-3xl">🎮</span>
+            <div>
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                Entretenimiento
+              </h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                12 transacciones
+              </p>
+            </div>
+          </div>
+          <button class="text-gray-400 hover:text-gray-600">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">
+              $380
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">de $500</div>
+          </div>
+          <div class="text-right">
+            <span
+              class="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-600 rounded-full font-medium"
+              >76%</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

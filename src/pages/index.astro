@@ -1,0 +1,584 @@
+---
+import "../styles/global.css";
+
+// importar todos los componentes necesarios
+import Admin from "../components/Admin.astro";
+import Dashboard from "../components/Dashboard.astro";
+import Login from "../components/Login.astro";
+import Register from "../components/Register.astro";
+import Accounts from "../components/Accounts.astro";
+import Transactions from "../components/Transactions.astro";
+import Categories from "../components/Categories.astro";
+import Reminders from "../components/Reminders.astro";
+import Notifications from "../components/Notifications.astro";
+import Profile from "../components/Profile.astro";
+import Modal from "../components/Modal.astro";
+import Toast from "../components/Toast.astro";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Astro</title>
+  </head>
+  <body class="bg-gray-50 transition-colors duration-300">
+    <div id="landing-page" class="min-h-screen">
+      <!-- Navbar Landing -->
+      <nav class="bg-white dark:bg-slate-900 shadow-sm sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <div class="flex items-center space-x-2">
+              <div
+                class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center"
+              >
+                <span class="text-white font-bold text-lg">F</span>
+              </div>
+              <span class="text-xl font-bold text-gray-900 dark:text-white"
+                >FinWallet</span
+              >
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+              <a
+                href="#features"
+                class="text-gray-600 dark:text-gray-300 hover:text-indigo-600"
+                >Características</a
+              >
+              <a
+                href="#pricing"
+                class="text-gray-600 dark:text-gray-300 hover:text-indigo-600"
+                >Precios</a
+              >
+              <a
+                href="#about"
+                class="text-gray-600 dark:text-gray-300 hover:text-indigo-600"
+                >Acerca de</a
+              >
+            </div>
+            <div class="flex items-center space-x-3">
+              <button
+                onclick="toggleDarkMode()"
+                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800"
+              >
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
+                  ></path>
+                </svg>
+              </button>
+              <button
+                onclick="showPage('login-page')"
+                class="text-indigo-600 font-medium hover:text-indigo-700"
+                >Entrar</button
+              >
+              <button
+                onclick="showPage('register-page')"
+                class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+                >Comenzar</button
+              >
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Hero Section -->
+      <section class="relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
+          <div class="text-center">
+            <h1
+              class="text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-6"
+            >
+              Controla tus <span class="text-indigo-600">finanzas</span><br />de
+              manera inteligente
+            </h1>
+            <p
+              class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto"
+            >
+              Gestiona gastos, deudas, ahorros y créditos en un solo lugar.
+              Simple, claro y poderoso.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onclick="showPage('register-page')"
+                class="bg-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-indigo-700 transform hover:scale-105 transition shadow-lg"
+              >
+                Comenzar gratis
+              </button>
+              <button
+                class="bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition border border-gray-200 dark:border-slate-700"
+              >
+                Ver demo
+              </button>
+            </div>
+          </div>
+
+          <!-- Hero Image/Mockup -->
+          <div class="mt-16 relative">
+            <div
+              class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-2xl p-8 mx-auto max-w-5xl"
+            >
+              <div
+                class="bg-white dark:bg-slate-900 rounded-xl shadow-xl p-6 space-y-4"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="h-3 w-3 rounded-full bg-red-500"></div>
+                  <div class="h-3 w-3 rounded-full bg-yellow-500"></div>
+                  <div class="h-3 w-3 rounded-full bg-green-500"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="bg-gray-50 dark:bg-slate-800 p-4 rounded-lg">
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      Balance Total
+                    </div>
+                    <div
+                      class="text-2xl font-bold text-gray-900 dark:text-white"
+                    >
+                      $12,450
+                    </div>
+                  </div>
+                  <div class="bg-gray-50 dark:bg-slate-800 p-4 rounded-lg">
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      Gastos
+                    </div>
+                    <div class="text-2xl font-bold text-red-600">-$3,240</div>
+                  </div>
+                  <div class="bg-gray-50 dark:bg-slate-800 p-4 rounded-lg">
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      Ahorros
+                    </div>
+                    <div class="text-2xl font-bold text-green-600">+$5,200</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section id="features" class="py-20 bg-white dark:bg-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Características principales
+            </h2>
+            <p class="text-xl text-gray-600 dark:text-gray-300">
+              Todo lo que necesitas para gestionar tu dinero
+            </p>
+          </div>
+          <div class="grid md:grid-cols-3 gap-8">
+            <div
+              class="p-6 rounded-2xl border border-gray-200 dark:border-slate-700 hover:shadow-xl transition"
+            >
+              <div
+                class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-xl flex items-center justify-center mb-4"
+              >
+                <svg
+                  class="w-6 h-6 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  >
+                  </path>
+                </svg>
+              </div>
+              <h3
+                class="text-xl font-semibold text-gray-900 dark:text-white mb-2"
+              >
+                Control de Gastos
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300">
+                Registra y categoriza todos tus gastos automáticamente.
+              </p>
+            </div>
+            <div
+              class="p-6 rounded-2xl border border-gray-200 dark:border-slate-700 hover:shadow-xl transition"
+            >
+              <div
+                class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center mb-4"
+              >
+                <svg
+                  class="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  >
+                  </path>
+                </svg>
+              </div>
+              <h3
+                class="text-xl font-semibold text-gray-900 dark:text-white mb-2"
+              >
+                Ahorros Inteligentes
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300">
+                Crea metas de ahorro y alcanza tus objetivos financieros.
+              </p>
+            </div>
+            <div
+              class="p-6 rounded-2xl border border-gray-200 dark:border-slate-700 hover:shadow-xl transition"
+            >
+              <div
+                class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center mb-4"
+              >
+                <svg
+                  class="w-6 h-6 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  >
+                  </path>
+                </svg>
+              </div>
+              <h3
+                class="text-xl font-semibold text-gray-900 dark:text-white mb-2"
+              >
+                Recordatorios
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300">
+                No olvides pagos importantes con notificaciones inteligentes.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="grid md:grid-cols-4 gap-8">
+            <div>
+              <h3 class="text-lg font-semibold mb-4">FinWallet</h3>
+              <p class="text-gray-400">Tu billetera financiera inteligente</p>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-4">Producto</h4>
+              <ul class="space-y-2 text-gray-400">
+                <li>
+                  <a href="#" class="hover:text-white">Características</a>
+                </li>
+                <li><a href="#" class="hover:text-white">Precios</a></li>
+                <li><a href="#" class="hover:text-white">Demo</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-4">Empresa</h4>
+              <ul class="space-y-2 text-gray-400">
+                <li><a href="#" class="hover:text-white">Acerca de</a></li>
+                <li><a href="#" class="hover:text-white">Blog</a></li>
+                <li><a href="#" class="hover:text-white">Contacto</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold mb-4">Legal</h4>
+              <ul class="space-y-2 text-gray-400">
+                <li><a href="#" class="hover:text-white">Privacidad</a></li>
+                <li><a href="#" class="hover:text-white">Términos</a></li>
+              </ul>
+            </div>
+          </div>
+          <div
+            class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400"
+          >
+            <p>&copy; 2024 FinWallet. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- insertar los componentes -->
+    <Admin />
+    <Dashboard />
+    <Login />
+    <Register />
+    <Accounts />
+    <Transactions />
+    <Categories />
+    <Reminders />
+    <Notifications />
+    <Profile />
+    <Modal />
+    <Toast />
+
+    <script is:inline>
+      // Dark Mode Toggle
+      function toggleDarkMode() {
+        document.body.classList.toggle("dark");
+        localStorage.setItem(
+          "darkMode",
+          document.body.classList.contains("dark")
+        );
+      }
+
+      // Load Dark Mode Preference
+      if (localStorage.getItem("darkMode") === "true") {
+        document.body.classList.add("dark");
+      }
+
+      // Page Navigation
+      function showPage(pageId) {
+        // Hide all pages
+        const pages = [
+          "landing-page",
+          "login-page",
+          "register-page",
+          "dashboard-page",
+          "accounts-page",
+          "transactions-page",
+          "categories-page",
+          "reminders-page",
+          "notifications-page",
+          "profile-page",
+          "admin-page",
+        ];
+
+        pages.forEach((page) => {
+          const element = document.getElementById(page);
+          if (element) {
+            element.classList.add("hidden");
+          }
+        });
+
+        // Show selected page
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+          targetPage.classList.remove("hidden");
+          window.scrollTo(0, 0);
+        }
+      }
+
+      // Sidebar Toggle (Mobile)
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        sidebar.classList.toggle("hidden");
+      }
+
+      // Modal Functions
+      function showModal(modalType) {
+        const overlay = document.getElementById("modal-overlay");
+        const content = document.getElementById("modal-content");
+
+        let modalHTML = "";
+
+        if (modalType === "add-transaction") {
+          modalHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Nueva Transacción</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
+                        <select class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option>Gasto</option>
+                            <option>Ingreso</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto</label>
+                        <input type="number" placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Categoría</label>
+                        <select class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option>🍔 Alimentación</option>
+                            <option>🚗 Transporte</option>
+                            <option>🎮 Entretenimiento</option>
+                            <option>🏠 Hogar</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descripción</label>
+                        <input type="text" placeholder="Ej: Compra en supermercado" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" onclick="closeModal(); showToast('Transacción agregada exitosamente', 'success')" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium">Guardar</button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
+                    </div>
+                </form>
+            `;
+        } else if (modalType === "add-account") {
+          modalHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Nueva Cuenta</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre de la Cuenta</label>
+                        <input type="text" placeholder="Mi Cuenta Bancaria" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
+                        <select class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option>Cuenta de Ahorro</option>
+                            <option>Cuenta Corriente</option>
+                            <option>Tarjeta de Crédito</option>
+                            <option>Efectivo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Balance Inicial</label>
+                        <input type="number" placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" onclick="closeModal(); showToast('Cuenta creada exitosamente', 'success')" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium">Crear</button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
+                    </div>
+                </form>
+            `;
+        } else if (modalType === "add-category") {
+          modalHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Nueva Categoría</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre</label>
+                        <input type="text" placeholder="Ej: Gimnasio" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Icono/Emoji</label>
+                        <input type="text" placeholder="💪" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Presupuesto Mensual</label>
+                        <input type="number" placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" onclick="closeModal(); showToast('Categoría creada exitosamente', 'success')" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium">Crear</button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
+                    </div>
+                </form>
+            `;
+        } else if (modalType === "add-reminder") {
+          modalHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Nuevo Recordatorio</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Título</label>
+                        <input type="text" placeholder="Ej: Pago de Internet" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto</label>
+                        <input type="number" placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha de Vencimiento</label>
+                        <input type="date" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Frecuencia</label>
+                        <select class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option>Una vez</option>
+                            <option>Semanal</option>
+                            <option>Mensual</option>
+                            <option>Anual</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" onclick="closeModal(); showToast('Recordatorio creado exitosamente', 'success')" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium">Crear</button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
+                    </div>
+                </form>
+            `;
+        }
+
+        content.innerHTML = modalHTML;
+        overlay.classList.remove("hidden");
+      }
+
+      function closeModal() {
+        const overlay = document.getElementById("modal-overlay");
+        overlay.classList.add("hidden");
+      }
+
+      // Toast Notifications
+      function showToast(message, type = "info") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+
+        const colors = {
+          success: "bg-green-500",
+          error: "bg-red-500",
+          warning: "bg-orange-500",
+          info: "bg-indigo-500",
+        };
+
+        toast.className = `${colors[type]} text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3 fade-in`;
+        toast.innerHTML = `
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          setTimeout(() => container.removeChild(toast), 300);
+        }, 3000);
+      }
+
+      // Close modal on outside click
+      document
+        .getElementById("modal-overlay")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            closeModal();
+          }
+        });
+
+      // Dashboard Section Navigation
+      function showDashboardSection(sectionId) {
+        // This function can be expanded for more complex dashboard navigation
+        console.log("Navigating to:", sectionId);
+      }
+
+      // Initialize - Show landing page by default
+      document.addEventListener("DOMContentLoaded", function () {
+        showPage("landing-page");
+      });
+    </script>
+  </body>
+</html>
