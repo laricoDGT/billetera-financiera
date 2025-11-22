@@ -205,6 +205,13 @@
                 verificationSuccess.classList.remove("hidden");
             }
 
+            // Clean up URL (remove token and query parameters)
+            window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname,
+            );
+
             // Redirect to dashboard after 2 seconds
             setTimeout(() => {
                 (window as any).showPage("dashboard-page");

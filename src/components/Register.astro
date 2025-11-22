@@ -209,6 +209,14 @@
           "Cuenta creada exitosamente. Revisa tu email para verificar tu cuenta.",
           "success",
         );
+
+        // Clean up URL (remove any query parameters)
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+
         // Redirect to email verification page
         setTimeout(() => {
           (window as any).showPage("email-verification-page");

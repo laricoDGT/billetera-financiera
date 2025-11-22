@@ -195,6 +195,14 @@
 
         // Success
         (window as any).showToast("Sesión iniciada correctamente", "success");
+
+        // Clean up URL (remove any query parameters)
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+
         // Redirect to dashboard
         (window as any).showPage("dashboard-page");
       } catch (err) {

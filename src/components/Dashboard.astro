@@ -452,7 +452,7 @@
               if (session?.data?.user) {
                 const user = session.data.user;
 
-                // Get user initials from name
+                // Get user initials from name or email
                 const getInitials = (name: string) => {
                   if (!name) return "U";
                   const names = name.trim().split(" ");
@@ -464,7 +464,9 @@
                   return name.substring(0, 2).toUpperCase();
                 };
 
-                const initials = getInitials(user.name || user.email || "User");
+                // Use name if available, otherwise use email
+                const displayName = user.name || user.email || "Usuario";
+                const initials = getInitials(displayName);
 
                 // Update navbar user info
                 const userNameNav = document.getElementById("user-name-nav");
@@ -478,8 +480,7 @@
                 );
 
                 if (userNameNav) {
-                  userNameNav.textContent =
-                    user.name || user.email || "Usuario";
+                  userNameNav.textContent = displayName;
                 }
 
                 if (userInitialsNav) {

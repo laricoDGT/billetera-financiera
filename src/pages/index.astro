@@ -607,6 +607,14 @@ const initialPage = session ? "dashboard-page" : "landing-page";
         // If there's a page parameter and it's valid, show that page
         if (pageParam && pageMap[pageParam]) {
           showPage(pageMap[pageParam]);
+
+          // Clean up URL after processing the parameter
+          // This removes query parameters from the URL without reloading the page
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname,
+          );
         } else {
           // Otherwise show the initial page (landing or dashboard)
           showPage(initialPage);
