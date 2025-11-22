@@ -8,6 +8,8 @@ import { APP_CONFIG, EMAIL_TEMPLATES } from "./config";
 const env = loadEnv("", process.cwd(), "");
 const DATABASE_URL = env.DATABASE_URL || process.env.DATABASE_URL;
 const RESEND_API_KEY = env.RESEND_API_KEY || process.env.RESEND_API_KEY;
+const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
 
 // Verify DATABASE_URL is available
 if (!DATABASE_URL) {
@@ -22,6 +24,13 @@ const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 if (!RESEND_API_KEY) {
     console.warn("⚠️  RESEND_API_KEY not found. Emails will be logged to console instead of being sent.");
+}
+
+// Verify Google OAuth credentials
+if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
+    console.log("✅ Google OAuth configured");
+} else {
+    console.warn("⚠️  Google OAuth credentials not found. Social sign-in will not be available.");
 }
 
 export const auth = betterAuth({
@@ -156,6 +165,10 @@ export const auth = betterAuth({
         autoSignInAfterVerification: true, // Auto sign in after verification
     },
     socialProviders: {
-        // Add providers here later
+        google: {
+            clientId: GOOGLE_CLIENT_ID || "",
+            clientSecret: GOOGLE_CLIENT_SECRET || "",
+            enabled: !!(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET),
+        },
     }
 });
