@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+export const prerender = false;
 
 // importar todos los componentes necesarios
 import Admin from "../components/Admin.astro";
@@ -14,6 +15,13 @@ import Notifications from "../components/Notifications.astro";
 import Profile from "../components/Profile.astro";
 import Modal from "../components/Modal.astro";
 import Toast from "../components/Toast.astro";
+import { auth } from "../lib/auth";
+
+const session = await auth.api.getSession({
+  headers: Astro.request.headers,
+});
+
+const initialPage = session ? "dashboard-page" : "landing-page";
 ---
 
 <html lang="es">
@@ -28,7 +36,7 @@ import Toast from "../components/Toast.astro";
     <div id="landing-page" class="min-h-screen">
       <!-- Navbar Landing -->
       <nav class="bg-white dark:bg-slate-900 shadow-sm sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16">
             <div class="flex items-center space-x-2">
               <div
@@ -85,7 +93,7 @@ import Toast from "../components/Toast.astro";
 
       <!-- Hero Section -->
       <section class="relative overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
           <div class="text-center">
             <h1
               class="text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-6"
@@ -159,7 +167,7 @@ import Toast from "../components/Toast.astro";
 
       <!-- Features Section -->
       <section id="features" class="py-20 bg-white dark:bg-slate-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center mb-16">
             <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Características principales
@@ -264,7 +272,7 @@ import Toast from "../components/Toast.astro";
       </section>
       <!-- Footer -->
       <footer class="bg-gray-900 text-white py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="grid md:grid-cols-4 gap-8">
             <div>
               <h3 class="text-lg font-semibold mb-4">FinWallet</h3>
@@ -319,15 +327,15 @@ import Toast from "../components/Toast.astro";
     <Modal />
     <Toast />
 
-    <script is:inline>
+    <script is:inline define:vars={{ initialPage }}>
       // Dark Mode Toggle
-      function toggleDarkMode() {
+      window.toggleDarkMode = function () {
         document.body.classList.toggle("dark");
         localStorage.setItem(
           "darkMode",
-          document.body.classList.contains("dark")
+          document.body.classList.contains("dark"),
         );
-      }
+      };
 
       // Load Dark Mode Preference
       if (localStorage.getItem("darkMode") === "true") {
@@ -335,7 +343,7 @@ import Toast from "../components/Toast.astro";
       }
 
       // Page Navigation
-      function showPage(pageId) {
+      window.showPage = function (pageId) {
         // Hide all pages
         const pages = [
           "landing-page",
@@ -364,16 +372,16 @@ import Toast from "../components/Toast.astro";
           targetPage.classList.remove("hidden");
           window.scrollTo(0, 0);
         }
-      }
+      };
 
       // Sidebar Toggle (Mobile)
-      function toggleSidebar() {
+      window.toggleSidebar = function () {
         const sidebar = document.getElementById("sidebar");
         sidebar.classList.toggle("hidden");
-      }
+      };
 
       // Modal Functions
-      function showModal(modalType) {
+      window.showModal = function (modalType) {
         const overlay = document.getElementById("modal-overlay");
         const content = document.getElementById("modal-content");
 
@@ -525,15 +533,15 @@ import Toast from "../components/Toast.astro";
 
         content.innerHTML = modalHTML;
         overlay.classList.remove("hidden");
-      }
+      };
 
-      function closeModal() {
+      window.closeModal = function () {
         const overlay = document.getElementById("modal-overlay");
         overlay.classList.add("hidden");
-      }
+      };
 
       // Toast Notifications
-      function showToast(message, type = "info") {
+      window.showToast = function (message, type = "info") {
         const container = document.getElementById("toast-container");
         const toast = document.createElement("div");
 
@@ -558,7 +566,7 @@ import Toast from "../components/Toast.astro";
           toast.style.opacity = "0";
           setTimeout(() => container.removeChild(toast), 300);
         }, 3000);
-      }
+      };
 
       // Close modal on outside click
       document
@@ -570,14 +578,14 @@ import Toast from "../components/Toast.astro";
         });
 
       // Dashboard Section Navigation
-      function showDashboardSection(sectionId) {
+      window.showDashboardSection = function (sectionId) {
         // This function can be expanded for more complex dashboard navigation
         console.log("Navigating to:", sectionId);
-      }
+      };
 
       // Initialize - Show landing page by default
       document.addEventListener("DOMContentLoaded", function () {
-        showPage("landing-page");
+        showPage(initialPage);
       });
     </script>
   </body>

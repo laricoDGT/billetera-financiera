@@ -5,7 +5,7 @@
 >
   <!-- Top Navbar -->
   <nav class="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <div class="flex items-center space-x-4">
           <button
@@ -219,10 +219,9 @@
             </svg>
             <span>Perfil</span>
           </a>
-          <a
-            href="#"
-            onclick="showPage('landing-page')"
-            class="flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+          <button
+            id="logout-btn"
+            class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
           >
             <svg
               class="w-5 h-5"
@@ -238,7 +237,7 @@
               ></path>
             </svg>
             <span>Cerrar Sesión</span>
-          </a>
+          </button>
         </div>
       </nav>
     </aside>
@@ -395,6 +394,23 @@
             </div>
           </div>
         </div>
+
+        <script>
+          import { authClient } from "../lib/auth-client";
+
+          const logoutBtn = document.getElementById("logout-btn");
+
+          if (logoutBtn) {
+            logoutBtn.addEventListener("click", async () => {
+              try {
+                await authClient.signOut();
+                (window as any).showPage("landing-page");
+              } catch (error) {
+                console.error("Error signing out:", error);
+              }
+            });
+          }
+        </script>
 
         <!-- Charts and Recent Transactions -->
         <div class="grid lg:grid-cols-3 gap-6">
