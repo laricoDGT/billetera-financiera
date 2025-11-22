@@ -1,0 +1,279 @@
+<!-- ==================== EMAIL VERIFICATION PAGE ==================== -->
+<div
+    id="email-verification-page"
+    class="hidden min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-4"
+>
+    <div
+        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-8 fade-in"
+    >
+        <div class="text-center mb-8">
+            <div
+                class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4"
+            >
+                <svg
+                    class="w-8 h-8 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    >
+                    </path>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Verificación de Email
+            </h2>
+            <p
+                class="text-gray-600 dark:text-gray-300 mt-2"
+                id="verification-status"
+            >
+                Verificando tu email...
+            </p>
+        </div>
+
+        <div id="verification-content" class="space-y-4">
+            <!-- Success State -->
+            <div id="verification-success" class="hidden">
+                <div
+                    class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6 text-center"
+                >
+                    <svg
+                        class="w-16 h-16 text-green-600 mx-auto mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        >
+                        </path>
+                    </svg>
+                    <p
+                        class="text-green-800 dark:text-green-200 text-lg font-semibold"
+                    >
+                        ¡Email verificado exitosamente!
+                    </p>
+                    <p class="text-green-700 dark:text-green-300 text-sm mt-2">
+                        Redirigiendo al dashboard...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="verification-error" class="hidden">
+                <div
+                    class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center"
+                >
+                    <svg
+                        class="w-16 h-16 text-red-600 mx-auto mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        >
+                        </path>
+                    </svg>
+                    <p
+                        class="text-red-800 dark:text-red-200 text-lg font-semibold"
+                    >
+                        Error al verificar el email
+                    </p>
+                    <p
+                        class="text-red-700 dark:text-red-300 text-sm mt-2"
+                        id="error-detail"
+                    >
+                        El enlace puede haber expirado o ser inválido.
+                    </p>
+                </div>
+
+                <button
+                    id="resend-verification-btn"
+                    class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transform hover:scale-105 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                >
+                    Reenviar email de verificación
+                </button>
+            </div>
+
+            <!-- Pending Verification State -->
+            <div id="verification-pending" class="hidden">
+                <div
+                    class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 text-center"
+                >
+                    <svg
+                        class="w-16 h-16 text-blue-600 mx-auto mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        >
+                        </path>
+                    </svg>
+                    <p
+                        class="text-blue-800 dark:text-blue-200 text-lg font-semibold"
+                    >
+                        Verifica tu email
+                    </p>
+                    <p class="text-blue-700 dark:text-blue-300 text-sm mt-2">
+                        Hemos enviado un enlace de verificación a tu correo
+                        electrónico. Por favor, revisa tu bandeja de entrada y
+                        haz clic en el enlace.
+                    </p>
+                </div>
+
+                <button
+                    id="resend-verification-btn-pending"
+                    class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transform hover:scale-105 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                >
+                    Reenviar email de verificación
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-6 text-center">
+            <button
+                onclick="showPage('login-page')"
+                class="text-indigo-600 font-semibold hover:text-indigo-700"
+                >← Volver al inicio de sesión</button
+            >
+        </div>
+    </div>
+</div>
+
+<script>
+    import { authClient } from "../lib/auth-client";
+
+    const verificationStatus = document.getElementById("verification-status");
+    const verificationSuccess = document.getElementById("verification-success");
+    const verificationError = document.getElementById("verification-error");
+    const verificationPending = document.getElementById("verification-pending");
+    const errorDetail = document.getElementById("error-detail");
+    const resendBtn = document.getElementById("resend-verification-btn");
+    const resendBtnPending = document.getElementById(
+        "resend-verification-btn-pending",
+    );
+
+    // Check if we have a token in the URL (user clicked verification link)
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+
+    async function verifyEmail(verificationToken: string) {
+        try {
+            const { data, error } = await authClient.verifyEmail({
+                query: {
+                    token: verificationToken,
+                },
+            });
+
+            if (error) {
+                if (verificationStatus) {
+                    verificationStatus.textContent = "Error en la verificación";
+                }
+                if (verificationError) {
+                    verificationError.classList.remove("hidden");
+                }
+                if (errorDetail) {
+                    errorDetail.textContent =
+                        error.message ||
+                        "El enlace puede haber expirado o ser inválido.";
+                }
+                return;
+            }
+
+            // Success
+            if (verificationStatus) {
+                verificationStatus.textContent = "¡Email verificado!";
+            }
+            if (verificationSuccess) {
+                verificationSuccess.classList.remove("hidden");
+            }
+
+            // Redirect to dashboard after 2 seconds
+            setTimeout(() => {
+                (window as any).showPage("dashboard-page");
+            }, 2000);
+        } catch (err) {
+            console.error("Verification error:", err);
+            if (verificationStatus) {
+                verificationStatus.textContent = "Error en la verificación";
+            }
+            if (verificationError) {
+                verificationError.classList.remove("hidden");
+            }
+        }
+    }
+
+    async function resendVerificationEmail() {
+        try {
+            const session = await authClient.getSession();
+            const sessionData = session?.data;
+
+            if (!sessionData || !sessionData.user?.email) {
+                (window as any).showToast(
+                    "Debes iniciar sesión para reenviar el email",
+                    "error",
+                );
+                return;
+            }
+
+            const { data, error } = await authClient.sendVerificationEmail({
+                email: sessionData.user.email,
+                callbackURL: window.location.origin + "/?page=verify-email",
+            });
+
+            if (error) {
+                (window as any).showToast(
+                    "Error al enviar el email de verificación",
+                    "error",
+                );
+                return;
+            }
+
+            (window as any).showToast(
+                "Email de verificación enviado. Revisa tu bandeja de entrada.",
+                "success",
+            );
+        } catch (err) {
+            console.error("Resend error:", err);
+            (window as any).showToast("Ocurrió un error inesperado", "error");
+        }
+    }
+
+    // Auto-verify if token is present
+    if (token) {
+        verifyEmail(token);
+    } else {
+        // Show pending state if no token
+        if (verificationStatus) {
+            verificationStatus.textContent = "Verificación pendiente";
+        }
+        if (verificationPending) {
+            verificationPending.classList.remove("hidden");
+        }
+    }
+
+    // Resend button handlers
+    if (resendBtn) {
+        resendBtn.addEventListener("click", resendVerificationEmail);
+    }
+    if (resendBtnPending) {
+        resendBtnPending.addEventListener("click", resendVerificationEmail);
+    }
+</script>

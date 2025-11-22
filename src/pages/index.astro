@@ -7,6 +7,9 @@ import Admin from "../components/Admin.astro";
 import Dashboard from "../components/Dashboard.astro";
 import Login from "../components/Login.astro";
 import Register from "../components/Register.astro";
+import ForgotPassword from "../components/ForgotPassword.astro";
+import ResetPassword from "../components/ResetPassword.astro";
+import EmailVerification from "../components/EmailVerification.astro";
 import Accounts from "../components/Accounts.astro";
 import Transactions from "../components/Transactions.astro";
 import Categories from "../components/Categories.astro";
@@ -30,7 +33,7 @@ const initialPage = session ? "dashboard-page" : "landing-page";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro</title>
+    <title>LaricoWallet - Tu billetera financiera inteligente</title>
   </head>
   <body class="bg-gray-50 transition-colors duration-300">
     <div id="landing-page" class="min-h-screen">
@@ -45,7 +48,7 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                 <span class="text-white font-bold text-lg">F</span>
               </div>
               <span class="text-xl font-bold text-gray-900 dark:text-white"
-                >FinWallet</span
+                >LaricoWallet</span
               >
             </div>
             <div class="hidden md:flex items-center space-x-8">
@@ -275,7 +278,7 @@ const initialPage = session ? "dashboard-page" : "landing-page";
         <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 class="text-lg font-semibold mb-4">FinWallet</h3>
+              <h3 class="text-lg font-semibold mb-4">LaricoWallet</h3>
               <p class="text-gray-400">Tu billetera financiera inteligente</p>
             </div>
             <div>
@@ -307,7 +310,7 @@ const initialPage = session ? "dashboard-page" : "landing-page";
           <div
             class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400"
           >
-            <p>&copy; 2024 FinWallet. Todos los derechos reservados.</p>
+            <p>&copy; 2024 LaricoWallet. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
@@ -318,6 +321,9 @@ const initialPage = session ? "dashboard-page" : "landing-page";
     <Dashboard />
     <Login />
     <Register />
+    <ForgotPassword />
+    <ResetPassword />
+    <EmailVerification />
     <Accounts />
     <Transactions />
     <Categories />
@@ -349,6 +355,9 @@ const initialPage = session ? "dashboard-page" : "landing-page";
           "landing-page",
           "login-page",
           "register-page",
+          "forgot-password-page",
+          "reset-password-page",
+          "email-verification-page",
           "dashboard-page",
           "accounts-page",
           "transactions-page",
@@ -585,7 +594,23 @@ const initialPage = session ? "dashboard-page" : "landing-page";
 
       // Initialize - Show landing page by default
       document.addEventListener("DOMContentLoaded", function () {
-        showPage(initialPage);
+        // Check for page parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageParam = urlParams.get("page");
+
+        // Map page parameter to page IDs
+        const pageMap = {
+          "reset-password": "reset-password-page",
+          "verify-email": "email-verification-page",
+        };
+
+        // If there's a page parameter and it's valid, show that page
+        if (pageParam && pageMap[pageParam]) {
+          showPage(pageMap[pageParam]);
+        } else {
+          // Otherwise show the initial page (landing or dashboard)
+          showPage(initialPage);
+        }
       });
     </script>
   </body>

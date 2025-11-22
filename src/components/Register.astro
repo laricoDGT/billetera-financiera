@@ -143,15 +143,13 @@
 
         // Success
         (window as any).showToast(
-          "Cuenta creada exitosamente. Por favor inicia sesión.",
+          "Cuenta creada exitosamente. Revisa tu email para verificar tu cuenta.",
           "success",
         );
-        // Redirect to login page using the global showPage function
-        // We need to access the global scope or dispatch an event
-        // Since showPage is defined in index.astro script tag, it might be available globally if it's not a module
-        // But Astro scripts are modules by default.
-        // The user's index.astro has `is:inline` on the script, so `showPage` IS global.
-        (window as any).showPage("login-page");
+        // Redirect to email verification page
+        setTimeout(() => {
+          (window as any).showPage("email-verification-page");
+        }, 1500);
       } catch (err) {
         console.error(err);
         (window as any).showToast("Ocurrió un error inesperado", "error");
