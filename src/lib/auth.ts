@@ -75,10 +75,10 @@ export const auth = betterAuth({
                                         <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">⏰ Este enlace expirará en 1 hora.</p>
                                         <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">🔒 Si no solicitaste este cambio, puedes ignorar este email de forma segura.</p>
                                     </div>
-                                    <p style="color: #4b5563; font-size: 16px; margin-top: 30px;">Saludos,<br><strong>El equipo de FinWallet</strong></p>
+                                    <p style="color: #4b5563; font-size: 16px; margin-top: 30px;">Saludos,<br><strong>El equipo de ${APP_CONFIG.name}</strong></p>
                                 </div>
                                 <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
-                                    <p>© 2024 FinWallet. Todos los derechos reservados.</p>
+                                    <p>${APP_CONFIG.copyright}</p>
                                 </div>
                             </body>
                             </html>
@@ -138,10 +138,10 @@ export const auth = betterAuth({
                                     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
                                         <p style="color: #6b7280; font-size: 14px; margin: 5px 0;">🔒 Si no creaste esta cuenta, puedes ignorar este email de forma segura.</p>
                                     </div>
-                                    <p style="color: #4b5563; font-size: 16px; margin-top: 30px;">Saludos,<br><strong>El equipo de FinWallet</strong></p>
+                                    <p style="color: #4b5563; font-size: 16px; margin-top: 30px;">Saludos,<br><strong>El equipo de ${APP_CONFIG.name}</strong></p>
                                 </div>
                                 <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
-                                    <p>© 2024 FinWallet. Todos los derechos reservados.</p>
+                                    <p>${APP_CONFIG.copyright}</p>
                                 </div>
                             </body>
                             </html>
