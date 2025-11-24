@@ -3,11 +3,25 @@ import { auth } from "../../../lib/auth";
 
 export const GET: APIRoute = async ({ request }) => {
     try {
-        // Get session to verify admin access
+        console.log("API: /api/admin/users called");
+        console.log("Cookie Header:", request.headers.get("cookie"));
+
         const session = await auth.api.getSession({ headers: request.headers });
+        console.log("Session found:", session ? "Yes" : "No");
+        if (session?.user) {
+            console.log("User role:", (session.user as any).role);
+        }
 
         if (!session?.user || (session.user as any).role !== 'superadmin') {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            console.log("Unauthorized access attempt");
+            return new Response(JSON.stringify({
+                error: "Unauthorized",
+                debug: {
+                    hasCookie: !!request.headers.get("cookie"),
+                    sessionFound: !!session,
+                    role: session?.user ? (session.user as any).role : null
+                }
+            }), {
                 status: 403,
                 headers: { "Content-Type": "application/json" }
             });
@@ -17,13 +31,14 @@ export const GET: APIRoute = async ({ request }) => {
         const url = new URL(request.url);
         const search = url.searchParams.get("search") || "";
         const page = parseInt(url.searchParams.get("page") || "1");
-        const limit = parseInt(url.searchParams.get("limit") || "20");
+        const limit = parseInt(url.searchParams.get("limit") || "10");
         const offset = (page - 1) * limit;
 
         // Use Better Auth admin plugin to list users
         const result = await auth.api.listUsers({
             query: {
-                search,
+                searchValue: search,
+                searchField: "email", // Default search by email
                 limit,
                 offset,
                 sortBy: "createdAt",

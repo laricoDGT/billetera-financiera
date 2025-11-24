@@ -380,6 +380,11 @@ const initialPage = session ? "dashboard-page" : "landing-page";
         if (targetPage) {
           targetPage.classList.remove("hidden");
           window.scrollTo(0, 0);
+
+          // Dispatch event for components to react
+          window.dispatchEvent(
+            new CustomEvent("pageChanged", { detail: { pageId } }),
+          );
         }
       };
 

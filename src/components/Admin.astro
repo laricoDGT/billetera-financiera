@@ -81,51 +81,6 @@
           </svg>
           <span>Usuarios</span>
         </a>
-        <a
-          href="#"
-          class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            >
-            </path>
-          </svg>
-          <span>Transacciones</span>
-        </a>
-        <a
-          href="#"
-          class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-            >
-            </path>
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-          </svg>
-          <span>Configuración</span>
-        </a>
       </nav>
     </aside>
 
@@ -140,7 +95,7 @@
         </p>
       </div>
 
-      <!-- Admin Stats -->
+      <!-- Admin Stats (Placeholder for now, can be made dynamic later) -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div
           class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
@@ -164,121 +119,15 @@
                 </path>
               </svg>
             </div>
-            <span
-              class="text-xs font-medium text-green-600 bg-green-100 dark:bg-green-900/20 px-2 py-1 rounded-full"
-              >+15%</span
-            >
           </div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            12,458
+          <div
+            class="text-2xl font-bold text-gray-900 dark:text-white mb-1"
+            id="total-users-count"
+          >
+            -
           </div>
           <div class="text-sm text-gray-600 dark:text-gray-400">
             Usuarios Totales
-          </div>
-        </div>
-
-        <div
-          class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <div
-              class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center"
-            >
-              <svg
-                class="w-6 h-6 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                >
-                </path>
-              </svg>
-            </div>
-            <span
-              class="text-xs font-medium text-green-600 bg-green-100 dark:bg-green-900/20 px-2 py-1 rounded-full"
-              >+28%</span
-            >
-          </div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            48,392
-          </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Transacciones Hoy
-          </div>
-        </div>
-
-        <div
-          class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <div
-              class="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center"
-            >
-              <svg
-                class="w-6 h-6 text-purple-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                >
-                </path>
-              </svg>
-            </div>
-            <span
-              class="text-xs font-medium text-green-600 bg-green-100 dark:bg-green-900/20 px-2 py-1 rounded-full"
-              >+42%</span
-            >
-          </div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            $2.4M
-          </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Volumen Total
-          </div>
-        </div>
-
-        <div
-          class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <div
-              class="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-xl flex items-center justify-center"
-            >
-              <svg
-                class="w-6 h-6 text-orange-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                >
-                </path>
-              </svg>
-            </div>
-            <span
-              class="text-xs font-medium text-red-600 bg-red-100 dark:bg-red-900/20 px-2 py-1 rounded-full"
-              >5</span
-            >
-          </div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            3.2%
-          </div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">
-            Tasa de Error
           </div>
         </div>
       </div>
@@ -292,15 +141,17 @@
             class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0"
           >
             <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-              Usuarios Recientes
+              Usuarios
             </h2>
             <div class="flex space-x-2">
               <input
                 type="text"
+                id="admin-search-input"
                 placeholder="Buscar usuario..."
                 class="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
               />
               <button
+                onclick="fetchUsers(1)"
                 class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
               >
                 <svg
@@ -336,7 +187,7 @@
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                 >
-                  Balance</th
+                  Rol</th
                 >
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
@@ -355,238 +206,261 @@
                 >
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
-              <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div
-                      class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold"
-                    >
-                      MP
-                    </div>
-                    <div class="ml-4">
-                      <div
-                        class="text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        María Pérez
-                      </div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">
-                        #12458
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                  >maria.perez@email.com</td
-                >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"
-                  >$8,450.00</td
-                >
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-600 rounded-full"
-                    >Activo</span
-                  >
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                  >20 Nov 2024</td
-                >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
-                >
-                  <button class="text-indigo-600 hover:text-indigo-900 mr-3"
-                    >Editar</button
-                  >
-                  <button class="text-red-600 hover:text-red-900"
-                    >Bloquear</button
-                  >
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div
-                      class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold"
-                    >
-                      CG
-                    </div>
-                    <div class="ml-4">
-                      <div
-                        class="text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        Carlos García
-                      </div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">
-                        #12457
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                  >carlos.garcia@email.com</td
-                >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"
-                  >$12,300.00</td
-                >
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-600 rounded-full"
-                    >Activo</span
-                  >
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                  >19 Nov 2024</td
-                >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
-                >
-                  <button class="text-indigo-600 hover:text-indigo-900 mr-3"
-                    >Editar</button
-                  >
-                  <button class="text-red-600 hover:text-red-900"
-                    >Bloquear</button
-                  >
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div
-                      class="w-10 h-10 bg-gradient-to-r from-pink-500 to-red-600 rounded-full flex items-center justify-center text-white font-semibold"
-                    >
-                      AL
-                    </div>
-                    <div class="ml-4">
-                      <div
-                        class="text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        Ana López
-                      </div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">
-                        #12456
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                  >ana.lopez@email.com</td
-                >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"
-                  >$6,780.00</td
-                >
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="px-2 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 rounded-full"
-                    >Pendiente</span
-                  >
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                  >18 Nov 2024</td
-                >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
-                >
-                  <button class="text-indigo-600 hover:text-indigo-900 mr-3"
-                    >Editar</button
-                  >
-                  <button class="text-red-600 hover:text-red-900"
-                    >Bloquear</button
-                  >
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div
-                      class="w-10 h-10 bg-gradient-to-r from-orange-500 to-yellow-600 rounded-full flex items-center justify-center text-white font-semibold"
-                    >
-                      RM
-                    </div>
-                    <div class="ml-4">
-                      <div
-                        class="text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        Roberto Martínez
-                      </div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">
-                        #12455
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                  >roberto.m@email.com</td
-                >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"
-                  >$15,200.00</td
-                >
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="px-2 py-1 text-xs font-medium bg-red-100 dark:bg-red-900/20 text-red-600 rounded-full"
-                    >Bloqueado</span
-                  >
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
-                  >15 Nov 2024</td
-                >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
-                >
-                  <button class="text-indigo-600 hover:text-indigo-900 mr-3"
-                    >Editar</button
-                  >
-                  <button class="text-green-600 hover:text-green-900"
-                    >Activar</button
-                  >
-                </td>
-              </tr>
+            <tbody
+              id="admin-users-table-body"
+              class="divide-y divide-gray-200 dark:divide-slate-700"
+            >
+              <!-- Rows will be populated by JS -->
             </tbody>
           </table>
         </div>
         <div
           class="px-6 py-4 border-t border-gray-200 dark:border-slate-700 flex items-center justify-between"
         >
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            Mostrando <span class="font-medium">1-4</span> de <span
-              class="font-medium">12,458</span
+          <div
+            class="text-sm text-gray-500 dark:text-gray-400"
+            id="admin-pagination-info"
+          >
+            Mostrando <span class="font-medium">0</span> de <span
+              class="font-medium">0</span
             > usuarios
           </div>
-          <div class="flex space-x-2">
-            <button
-              class="px-3 py-1 border border-gray-300 dark:border-slate-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700"
-              >Anterior</button
-            >
-            <button
-              class="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm"
-              >1</button
-            >
-            <button
-              class="px-3 py-1 border border-gray-300 dark:border-slate-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700"
-              >2</button
-            >
-            <button
-              class="px-3 py-1 border border-gray-300 dark:border-slate-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700"
-              >3</button
-            >
-            <button
-              class="px-3 py-1 border border-gray-300 dark:border-slate-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700"
-              >Siguiente</button
-            >
+          <div class="flex space-x-2" id="admin-pagination-controls">
+            <!-- Pagination buttons will be populated by JS -->
           </div>
         </div>
       </div>
     </main>
   </div>
 </div>
+
+<script lang="ts">
+  import { authClient } from "../lib/auth-client";
+
+  let currentAdminPage = 1;
+  const adminLimit = 10;
+
+  async function fetchUsers(page: number = 1) {
+    currentAdminPage = page;
+    const searchInput = document.getElementById("admin-search-input");
+    const search = searchInput ? (searchInput as HTMLInputElement).value : "";
+
+    try {
+      const query: any = {
+        limit: adminLimit,
+        offset: (page - 1) * adminLimit,
+        sortBy: "createdAt",
+        sortDirection: "desc",
+      };
+
+      if (search) {
+        query.searchValue = search;
+        query.searchField = "email";
+      }
+
+      const { data, error } = await authClient.admin.listUsers({
+        query,
+      });
+
+      if (error) {
+        if (error.status === 403) {
+          console.error("Auth Error:", error);
+          (window as any).showToast(
+            "No tienes permisos de administrador: " + error.message,
+            "error",
+          );
+          return;
+        }
+        throw error;
+      }
+
+      if (data) {
+        renderUsersTable(data.users);
+        // data.total might be missing in some versions, check response structure
+        // The admin plugin usually returns { users: [], total: number }
+        renderPagination((data as any).total || data.users.length); // Fallback
+
+        const totalCountEl = document.getElementById("total-users-count");
+        if (totalCountEl) {
+          totalCountEl.textContent = (
+            (data as any).total || data.users.length
+          ).toString();
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      (window as any).showToast("Error al cargar usuarios", "error");
+    }
+  }
+
+  function renderUsersTable(users: any[]) {
+    const tbody = document.getElementById("admin-users-table-body");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if (users.length === 0) {
+      tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    No se encontraron usuarios.
+                </td>
+            </tr>
+        `;
+      return;
+    }
+
+    users.forEach((user: any) => {
+      const initials = user.name
+        ? user.name.substring(0, 2).toUpperCase()
+        : user.email.substring(0, 2).toUpperCase();
+      const statusColor = user.banned
+        ? "bg-red-100 text-red-600 dark:bg-red-900/20"
+        : "bg-green-100 text-green-600 dark:bg-green-900/20";
+      const statusText = user.banned ? "Bloqueado" : "Activo";
+
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-gray-50 dark:hover:bg-slate-700 transition";
+      tr.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+              ${initials}
+            </div>
+            <div class="ml-4">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">
+                ${user.name || "Sin nombre"}
+              </div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">
+                ${user.id.substring(0, 8)}...
+              </div>
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+          ${user.email}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+          <select onchange="changeRole('${user.id}', this.value)" class="bg-transparent border-none focus:ring-0 cursor-pointer">
+            <option value="user" ${user.role === "user" ? "selected" : ""}>Usuario</option>
+            <option value="superadmin" ${user.role === "superadmin" ? "selected" : ""}>Superadmin</option>
+          </select>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="px-2 py-1 text-xs font-medium ${statusColor} rounded-full">
+            ${statusText}
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+          ${new Date(user.createdAt).toLocaleDateString()}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+          <button onclick="toggleStatus('${user.id}', ${user.banned})" class="${user.banned ? "text-green-600 hover:text-green-900" : "text-red-600 hover:text-red-900"}">
+            ${user.banned ? "Activar" : "Bloquear"}
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderPagination(total: number) {
+    const totalPages = Math.ceil(total / adminLimit);
+    const start = (currentAdminPage - 1) * adminLimit + 1;
+    const end = Math.min(currentAdminPage * adminLimit, total);
+
+    const infoEl = document.getElementById("admin-pagination-info");
+    if (infoEl) {
+      infoEl.innerHTML = `
+            Mostrando <span class="font-medium">${total > 0 ? start : 0}-${end}</span> de <span class="font-medium">${total}</span> usuarios
+        `;
+    }
+
+    const controls = document.getElementById("admin-pagination-controls");
+    if (!controls) return;
+    controls.innerHTML = "";
+
+    if (totalPages <= 1) return;
+
+    // Previous
+    const prevBtn = document.createElement("button");
+    prevBtn.className =
+      "px-3 py-1 border border-gray-300 dark:border-slate-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50";
+    prevBtn.textContent = "Anterior";
+    prevBtn.disabled = currentAdminPage === 1;
+    prevBtn.onclick = () => fetchUsers(currentAdminPage - 1);
+    controls.appendChild(prevBtn);
+
+    // Next
+    const nextBtn = document.createElement("button");
+    nextBtn.className =
+      "px-3 py-1 border border-gray-300 dark:border-slate-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50";
+    nextBtn.textContent = "Siguiente";
+    nextBtn.disabled = currentAdminPage === totalPages;
+    nextBtn.onclick = () => fetchUsers(currentAdminPage + 1);
+    controls.appendChild(nextBtn);
+  }
+
+  // Expose functions to window for onclick handlers
+  (window as any).fetchUsers = fetchUsers;
+
+  (window as any).changeRole = async function (
+    userId: string,
+    newRole: string,
+  ) {
+    try {
+      const { error } = await authClient.admin.setRole({
+        userId,
+        role: newRole,
+      });
+
+      if (error) throw error;
+
+      (window as any).showToast("Rol actualizado correctamente", "success");
+      fetchUsers(currentAdminPage); // Refresh
+    } catch (error) {
+      console.error(error);
+      (window as any).showToast("Error al actualizar rol", "error");
+    }
+  };
+
+  (window as any).toggleStatus = async function (
+    userId: string,
+    isBanned: boolean,
+  ) {
+    try {
+      let error;
+      if (isBanned) {
+        const res = await authClient.admin.unbanUser({ userId });
+        error = res.error;
+      } else {
+        const res = await authClient.admin.banUser({ userId });
+        error = res.error;
+      }
+
+      if (error) throw error;
+
+      (window as any).showToast(
+        `Usuario ${!isBanned ? "bloqueado" : "activado"} correctamente`,
+        "success",
+      );
+      fetchUsers(currentAdminPage); // Refresh
+    } catch (error) {
+      console.error(error);
+      (window as any).showToast("Error al actualizar estado", "error");
+    }
+  };
+
+  // Initial load when page is shown
+  // We can hook into the showPage function or just check visibility periodically/on click
+  // For now, let's expose a function to init admin
+  window.initAdminPanel = function () {
+    fetchUsers();
+  };
+
+  // Listen for page changes
+  window.addEventListener("pageChanged", (event) => {
+    if (event.detail.pageId === "admin-page") {
+      fetchUsers();
+    }
+  });
+</script>

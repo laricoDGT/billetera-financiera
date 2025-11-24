@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 import { loadEnv } from "vite";
 import { Resend } from "resend";
+import { admin } from "better-auth/plugins";
 import { APP_CONFIG, EMAIL_TEMPLATES } from "./config";
 
 // Load environment variables manually
@@ -38,6 +39,22 @@ export const auth = betterAuth({
         connectionString: DATABASE_URL,
         ssl: { rejectUnauthorized: false }, // Neon requires SSL
     }),
+    baseURL: "http://localhost:4321",
+    plugins: [
+        admin()
+    ],
+    user: {
+        additionalFields: {
+            role: {
+                type: "string",
+                defaultValue: "user"
+            },
+            banned: {
+                type: "boolean",
+                defaultValue: false
+            }
+        }
+    },
     emailAndPassword: {
         enabled: true,
         // Password reset configuration

@@ -93,11 +93,18 @@
                 <span id="user-initials-nav">U</span>
               </div>
               <!-- User Name -->
-              <span
-                id="user-name-nav"
-                class="hidden sm:block font-medium text-gray-900 dark:text-white"
-                >Cargando...</span
-              >
+              <div class="hidden sm:flex flex-col items-start">
+                <span
+                  id="user-name-nav"
+                  class="font-medium text-gray-900 dark:text-white leading-tight"
+                  >Cargando...</span
+                >
+                <span
+                  id="superadmin-badge"
+                  class="hidden text-[10px] font-bold text-white bg-red-600 px-1.5 py-0.5 rounded-full leading-none mt-0.5"
+                  >ADMIN</span
+                >
+              </div>
               <!-- Dropdown Icon -->
               <svg
                 id="user-menu-icon"
@@ -138,6 +145,26 @@
               </div>
 
               <!-- Menu Items -->
+              <button
+                id="admin-panel-link"
+                onclick="showPage('admin-page')"
+                class="hidden w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition font-medium"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                  ></path>
+                </svg>
+                <span>Panel Admin</span>
+              </button>
               <button
                 onclick="showPage('profile-page')"
                 class="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
@@ -578,6 +605,20 @@
                   // User has no profile picture (email/password login), show initials
                   userAvatarNav.classList.add("hidden");
                   userAvatarPlaceholderNav.classList.remove("hidden");
+                }
+
+                // Handle SuperAdmin elements
+                const superAdminBadge =
+                  document.getElementById("superadmin-badge");
+                const adminPanelLink =
+                  document.getElementById("admin-panel-link");
+
+                if ((user as any).role === "superadmin") {
+                  superAdminBadge?.classList.remove("hidden");
+                  adminPanelLink?.classList.remove("hidden");
+                } else {
+                  superAdminBadge?.classList.add("hidden");
+                  adminPanelLink?.classList.add("hidden");
                 }
               }
             } catch (error) {
