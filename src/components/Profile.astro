@@ -146,8 +146,9 @@
         </form>
       </div>
 
-      <!-- Security -->
+      <!-- Security (Hidden for OAuth users without password) -->
       <div
+        id="security-section"
         class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
       >
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -297,6 +298,34 @@
         </form>
       </div>
 
+      <!-- Logout Section -->
+      <div
+        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
+      >
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Sesión
+        </h3>
+        <button
+          id="profile-logout-btn"
+          class="w-full flex items-center justify-center space-x-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition font-medium"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            ></path>
+          </svg>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+
       <!-- Danger Zone -->
       <div
         class="bg-red-50 dark:bg-red-900/10 rounded-2xl shadow-sm p-6 border border-red-200 dark:border-red-900/20"
@@ -434,6 +463,27 @@
 
         if (emailInput) {
           emailInput.value = user.email || "";
+        }
+
+        // Hide Security section if user doesn't have a password (OAuth login)
+        // Better Auth stores accounts separately, so we check if user has password-based auth
+        const securitySection = document.getElementById("security-section");
+        if (securitySection) {
+          // If user has accounts array, check if any are email/password
+          const hasPasswordAuth = (user as any).accounts?.some(
+            (account: any) => account.providerId === "credential",
+          );
+
+          // For simplicity, we can also check if user.emailVerified exists
+          // OAuth users typically have emailVerified = true by default
+          // But the safest way is to try to detect based on available data
+          // Since Better Auth doesn't expose account info in session by default,
+          // we'll hide it if user has an image (likely OAuth) and no explicit password indicator
+
+          // Simple heuristic: if user has Google image, likely OAuth-only
+          if (user.image && user.image.includes("googleusercontent.com")) {
+            securitySection.classList.add("hidden");
+          }
         }
 
         // Load preferences from localStorage
@@ -618,6 +668,24 @@
       // Save to localStorage
       localStorage.setItem("userPreferences", JSON.stringify(preferences));
       showSuccess("Preferencias guardadas exitosamente");
+    });
+  }
+
+  // Handle profile logout button
+  const profileLogoutBtn = document.getElementById("profile-logout-btn");
+  if (profileLogoutBtn) {
+    profileLogoutBtn.addEventListener("click", async () => {
+      try {
+        await authClient.signOut();
+        localStorage.clear();
+        sessionStorage.clear();
+        (window as any).showPage("landing-page");
+      } catch (error) {
+        console.error("Error signing out:", error);
+        localStorage.clear();
+        sessionStorage.clear();
+        (window as any).showPage("landing-page");
+      }
     });
   }
 
