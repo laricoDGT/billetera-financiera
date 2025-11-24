@@ -74,30 +74,114 @@
               ></path>
             </svg>
           </button>
-          <button
-            onclick="showPage('profile-page')"
-            class="flex items-center space-x-2"
-          >
-            <!-- User Avatar (Google profile picture or initials) -->
-            <img
-              id="user-avatar-nav"
-              src=""
-              alt="User Avatar"
-              class="w-8 h-8 rounded-full border-2 border-indigo-500 object-cover hidden"
-            />
+          <!-- User Menu Dropdown -->
+          <div class="relative">
+            <button
+              id="user-menu-button"
+              class="flex items-center space-x-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl px-3 py-2 transition"
+            >
+              <!-- User Avatar -->
+              <img
+                id="user-avatar-nav"
+                alt="User Avatar"
+                class="w-8 h-8 rounded-full border-2 border-indigo-500 object-cover hidden"
+              />
+              <div
+                id="user-avatar-placeholder-nav"
+                class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+              >
+                <span id="user-initials-nav">U</span>
+              </div>
+              <!-- User Name -->
+              <span
+                id="user-name-nav"
+                class="hidden sm:block font-medium text-gray-900 dark:text-white"
+                >Cargando...</span
+              >
+              <!-- Dropdown Icon -->
+              <svg
+                id="user-menu-icon"
+                class="w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+
+            <!-- Dropdown Menu -->
             <div
-              id="user-avatar-placeholder-nav"
-              class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+              id="user-dropdown-menu"
+              class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 py-2 z-50"
             >
-              <span id="user-initials-nav">U</span>
+              <!-- User Info Header -->
+              <div
+                class="px-4 py-3 border-b border-gray-200 dark:border-slate-700"
+              >
+                <p
+                  id="dropdown-user-name"
+                  class="text-sm font-semibold text-gray-900 dark:text-white"
+                >
+                  Cargando...
+                </p>
+                <p
+                  id="dropdown-user-email"
+                  class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                >
+                  -
+                </p>
+              </div>
+
+              <!-- Menu Items -->
+              <button
+                onclick="showPage('profile-page')"
+                class="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  ></path>
+                </svg>
+                <span>Mi Perfil</span>
+              </button>
+
+              <div class="border-t border-gray-200 dark:border-slate-700 my-1">
+              </div>
+
+              <button
+                id="dropdown-logout-btn"
+                class="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  ></path>
+                </svg>
+                <span>Cerrar Sesión</span>
+              </button>
             </div>
-            <!-- User Name -->
-            <span
-              id="user-name-nav"
-              class="hidden sm:block font-medium text-gray-900 dark:text-white"
-              >Cargando...</span
-            >
-          </button>
+          </div>
         </div>
       </div>
     </div>
@@ -416,30 +500,27 @@
 
           const logoutBtn = document.getElementById("logout-btn");
 
+          // Logout handler with complete data cleanup
           if (logoutBtn) {
             logoutBtn.addEventListener("click", async () => {
               try {
+                // 1. Sign out from Better Auth
                 await authClient.signOut();
+
+                // 2. Clear all localStorage (preferences, cached data, etc.)
+                localStorage.clear();
+
+                // 3. Clear all sessionStorage
+                sessionStorage.clear();
+
+                // 4. Redirect to landing page
                 (window as any).showPage("landing-page");
               } catch (error) {
                 console.error("Error signing out:", error);
-              }
-            });
-          }
-        </script>
-        <script>
-          import { authClient } from "../lib/auth-client";
-
-          const logoutBtn = document.getElementById("logout-btn");
-
-          // Logout handler
-          if (logoutBtn) {
-            logoutBtn.addEventListener("click", async () => {
-              try {
-                await authClient.signOut();
+                // Even if there's an error, try to clean up local data
+                localStorage.clear();
+                sessionStorage.clear();
                 (window as any).showPage("landing-page");
-              } catch (error) {
-                console.error("Error signing out:", error);
               }
             });
           }
@@ -487,11 +568,16 @@
                   userInitialsNav.textContent = initials;
                 }
 
-                // If user has a profile picture (from Google OAuth), show it
+                // Handle profile picture display
                 if (user.image && userAvatarNav && userAvatarPlaceholderNav) {
+                  // User has a profile picture (from Google OAuth), show it
                   userAvatarNav.src = user.image;
                   userAvatarNav.classList.remove("hidden");
                   userAvatarPlaceholderNav.classList.add("hidden");
+                } else if (userAvatarNav && userAvatarPlaceholderNav) {
+                  // User has no profile picture (email/password login), show initials
+                  userAvatarNav.classList.add("hidden");
+                  userAvatarPlaceholderNav.classList.remove("hidden");
                 }
               }
             } catch (error) {
@@ -501,6 +587,112 @@
 
           // Load user data when dashboard is shown
           loadUserData();
+
+          // Listen for login events to reload user data
+          // This fixes the issue where Google OAuth data persists after logout
+          window.addEventListener("userLoggedIn", () => {
+            console.log(
+              "User logged in event received, reloading user data...",
+            );
+            loadUserData();
+          });
+
+          // ===== USER DROPDOWN MENU FUNCTIONALITY =====
+          const userMenuButton = document.getElementById("user-menu-button");
+          const userDropdownMenu =
+            document.getElementById("user-dropdown-menu");
+          const userMenuIcon = document.getElementById("user-menu-icon");
+          const dropdownLogoutBtn = document.getElementById(
+            "dropdown-logout-btn",
+          );
+
+          // Toggle dropdown menu
+          if (userMenuButton && userDropdownMenu) {
+            userMenuButton.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const isHidden = userDropdownMenu.classList.contains("hidden");
+
+              if (isHidden) {
+                userDropdownMenu.classList.remove("hidden");
+                userMenuIcon?.classList.add("rotate-180");
+              } else {
+                userDropdownMenu.classList.add("hidden");
+                userMenuIcon?.classList.remove("rotate-180");
+              }
+            });
+          }
+
+          // Close dropdown when clicking outside
+          document.addEventListener("click", (e) => {
+            if (
+              userDropdownMenu &&
+              !userDropdownMenu.classList.contains("hidden")
+            ) {
+              const target = e.target as HTMLElement;
+              if (
+                !userMenuButton?.contains(target) &&
+                !userDropdownMenu.contains(target)
+              ) {
+                userDropdownMenu.classList.add("hidden");
+                userMenuIcon?.classList.remove("rotate-180");
+              }
+            }
+          });
+
+          // Close dropdown when clicking on menu items
+          userDropdownMenu?.addEventListener("click", (e) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === "BUTTON" || target.closest("button")) {
+              userDropdownMenu.classList.add("hidden");
+              userMenuIcon?.classList.remove("rotate-180");
+            }
+          });
+
+          // Dropdown logout handler
+          if (dropdownLogoutBtn) {
+            dropdownLogoutBtn.addEventListener("click", async () => {
+              try {
+                await authClient.signOut();
+                localStorage.clear();
+                sessionStorage.clear();
+                (window as any).showPage("landing-page");
+              } catch (error) {
+                console.error("Error signing out:", error);
+                localStorage.clear();
+                sessionStorage.clear();
+                (window as any).showPage("landing-page");
+              }
+            });
+          }
+
+          // Update dropdown user info when user data is loaded
+          async function updateDropdownUserInfo() {
+            try {
+              const session = await authClient.getSession();
+              if (session?.data?.user) {
+                const user = session.data.user;
+                const dropdownUserName =
+                  document.getElementById("dropdown-user-name");
+                const dropdownUserEmail = document.getElementById(
+                  "dropdown-user-email",
+                );
+
+                if (dropdownUserName) {
+                  dropdownUserName.textContent =
+                    user.name || user.email || "Usuario";
+                }
+                if (dropdownUserEmail) {
+                  dropdownUserEmail.textContent = user.email || "-";
+                }
+              }
+            } catch (error) {
+              console.error("Error updating dropdown user info:", error);
+            }
+          }
+
+          // Update dropdown info on load and when user logs in
+          updateDropdownUserInfo();
+          window.addEventListener("userLoggedIn", updateDropdownUserInfo);
         </script>
 
         <!-- Charts and Recent Transactions -->
