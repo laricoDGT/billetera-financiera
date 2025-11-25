@@ -1007,6 +1007,12 @@ const initialPage = session ? "dashboard-page" : "landing-page";
       window.payDebt = async function () {
         const id = document.getElementById("pay-debt-id").value;
         const amount = document.getElementById("pay-debt-amount").value;
+        const accountId = document.getElementById("pay-debt-account").value;
+
+        if (!accountId) {
+          showToast("Por favor selecciona una cuenta", "error");
+          return;
+        }
 
         const btn = document.getElementById("btn-pay-debt");
         const btnText = document.getElementById("btn-text-pay-debt");
@@ -1032,6 +1038,7 @@ const initialPage = session ? "dashboard-page" : "landing-page";
             body: JSON.stringify({
               id,
               amount,
+              account_id: accountId,
             }),
           });
 
@@ -1651,6 +1658,12 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                         <input type="text" id="pay-debt-name" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white bg-gray-100 dark:bg-slate-800" disabled>
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cuenta</label>
+                        <select id="pay-debt-account" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                            <option value="" disabled selected>Cargando cuentas...</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto a Pagar</label>
                         <input type="number" id="pay-debt-amount" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
                     </div>
@@ -1666,6 +1679,45 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                     </div>
                 </form>
             `;
+
+          // Fetch accounts
+          setTimeout(async () => {
+            try {
+              let headers = { "Content-Type": "application/json" };
+              const sessionData = await authClient.getSession();
+              if (sessionData?.data?.session?.token) {
+                headers["Authorization"] =
+                  `Bearer ${sessionData.data.session.token}`;
+              }
+
+              const response = await fetch("/api/accounts", { headers });
+              if (response.ok) {
+                const accounts = await response.json();
+                const select = document.getElementById("pay-debt-account");
+                if (select) {
+                  if (accounts.length === 0) {
+                    select.innerHTML =
+                      '<option value="" disabled selected>No tienes cuentas. Crea una primero.</option>';
+                  } else {
+                    select.innerHTML =
+                      '<option value="" disabled selected>Selecciona una cuenta</option>' +
+                      accounts
+                        .map(
+                          (acc) =>
+                            `<option value="${acc.id}">${acc.name} (${acc.currency} ${acc.balance})</option>`
+                        )
+                        .join("");
+                  }
+                }
+              }
+            } catch (e) {
+              console.error("Error fetching accounts", e);
+              const select = document.getElementById("pay-debt-account");
+              if (select)
+                select.innerHTML =
+                  '<option value="" disabled selected>Error al cargar cuentas</option>';
+            }
+          }, 100);
         } else if (modalType === "add-invoice") {
           modalHTML = `
                 <div class="flex items-center justify-between mb-4">

@@ -17,18 +17,18 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const body = await request.json();
-    const { id, amount } = body;
+    const { id, amount, account_id } = body;
 
-    if (!id || !amount) {
+    if (!id || !amount || !account_id) {
       return new Response(
-        JSON.stringify({ error: "ID y monto son requeridos" }),
+        JSON.stringify({ error: "ID, monto y cuenta son requeridos" }),
         { status: 400 }
       );
     }
 
     // Verify ownership and get current remaining amount
     const check = await query(
-      "SELECT remaining_amount FROM financial_debts WHERE id = $1 AND user_id = $2",
+      "SELECT name, type, remaining_amount FROM financial_debts WHERE id = $1 AND user_id = $2",
       [id, session.user.id]
     );
 
@@ -38,7 +38,8 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const currentRemaining = parseFloat(check.rows[0].remaining_amount);
+    const debt = check.rows[0];
+    const currentRemaining = parseFloat(debt.remaining_amount);
     const paymentAmount = parseFloat(amount);
 
     if (paymentAmount > currentRemaining) {
@@ -50,6 +51,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const newRemaining = currentRemaining - paymentAmount;
 
+    // Update debt
     const result = await query(
       `UPDATE financial_debts 
        SET remaining_amount = $1,
@@ -57,6 +59,33 @@ export const POST: APIRoute = async ({ request }) => {
        WHERE id = $2 AND user_id = $3
        RETURNING *`,
       [newRemaining, id, session.user.id]
+    );
+
+    // Create transaction record
+    const transactionType = debt.type === "receivable" ? "Ingreso" : "Gasto";
+    const description = `Pago de deuda: ${debt.name}`;
+
+    await query(
+      `INSERT INTO financial_transactions (user_id, account_id, type, amount, category, description, date)
+       VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+      [
+        session.user.id,
+        account_id,
+        transactionType,
+        paymentAmount,
+        "Deudas",
+        description,
+      ]
+    );
+
+    // Update account balance
+    const balanceChange =
+      transactionType === "Ingreso" ? paymentAmount : -paymentAmount;
+    await query(
+      `UPDATE financial_accounts 
+         SET balance = balance + $1, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = $2 AND user_id = $3`,
+      [balanceChange, account_id, session.user.id]
     );
 
     return new Response(JSON.stringify(result.rows[0]), {
