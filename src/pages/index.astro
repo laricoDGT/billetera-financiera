@@ -486,6 +486,95 @@ const initialPage = session ? "dashboard-page" : "landing-page";
         }
       };
 
+      // Create Transaction
+      window.createTransaction = async function () {
+        const type = document.getElementById("transaction-type").value;
+        const accountId = document.getElementById("transaction-account").value;
+        const amount = document.getElementById("transaction-amount").value;
+        const category = document.getElementById("transaction-category").value;
+        const description = document.getElementById(
+          "transaction-description"
+        ).value;
+
+        if (!accountId) {
+          showToast("Por favor selecciona una cuenta", "error");
+          return;
+        }
+
+        const btn = document.getElementById("btn-create-transaction");
+        const btnText = document.getElementById("btn-text-create-transaction");
+        const btnSpinner = document.getElementById(
+          "btn-spinner-create-transaction"
+        );
+
+        // Show loading
+        if (btn && btnText && btnSpinner) {
+          btn.disabled = true;
+          btnText.textContent = "Guardando...";
+          btnSpinner.classList.remove("hidden");
+        }
+
+        try {
+          // Get session token if available
+          let headers = {
+            "Content-Type": "application/json",
+          };
+
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch("/api/transactions", {
+            method: "POST",
+            headers: headers,
+            credentials: "include",
+            body: JSON.stringify({
+              type,
+              account_id: accountId,
+              amount,
+              category,
+              description,
+              date: new Date().toISOString(),
+            }),
+          });
+
+          if (response.ok) {
+            showToast("Transacción creada exitosamente", "success");
+            closeModal();
+            // Reload page to show new transaction
+            setTimeout(() => {
+              window.location.href = "/?page=transactions";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            console.error("Error creating transaction:", errorData);
+            showToast(
+              `Error: ${errorData.error || "Error al crear la transacción"}`,
+              "error"
+            );
+            // Reset button
+            if (btn && btnText && btnSpinner) {
+              btn.disabled = false;
+              btnText.textContent = "Guardar";
+              btnSpinner.classList.add("hidden");
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+          // Reset button
+          if (btn && btnText && btnSpinner) {
+            btn.disabled = false;
+            btnText.textContent = "Guardar";
+            btnSpinner.classList.add("hidden");
+          }
+        }
+      };
+
       // Modal Functions
       window.showModal = function (modalType) {
         const overlay = document.getElementById("modal-overlay");
@@ -503,37 +592,93 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                         </svg>
                     </button>
                 </div>
-                <form class="space-y-4">
+                <form class="space-y-4" onsubmit="event.preventDefault(); createTransaction()">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
-                        <select class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                            <option>Gasto</option>
-                            <option>Ingreso</option>
+                        <select id="transaction-type" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="Gasto">Gasto</option>
+                            <option value="Ingreso">Ingreso</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cuenta</label>
+                        <select id="transaction-account" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                            <option value="" disabled selected>Cargando cuentas...</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto</label>
-                        <input type="number" placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        <input type="number" id="transaction-amount" placeholder="0.00" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Categoría</label>
-                        <select class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                            <option>🍔 Alimentación</option>
-                            <option>🚗 Transporte</option>
-                            <option>🎮 Entretenimiento</option>
-                            <option>🏠 Hogar</option>
+                        <select id="transaction-category" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="Alimentación">🍔 Alimentación</option>
+                            <option value="Transporte">🚗 Transporte</option>
+                            <option value="Entretenimiento">🎮 Entretenimiento</option>
+                            <option value="Hogar">🏠 Hogar</option>
+                            <option value="Salud">💊 Salud</option>
+                            <option value="Educación">📚 Educación</option>
+                            <option value="Salario">💰 Salario</option>
+                            <option value="Otros">📝 Otros</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descripción</label>
-                        <input type="text" placeholder="Ej: Compra en supermercado" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" id="transaction-description" placeholder="Ej: Compra en supermercado" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div class="flex gap-3 pt-4">
-                        <button type="button" onclick="closeModal(); showToast('Transacción agregada exitosamente', 'success')" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium">Guardar</button>
+                        <button type="submit" id="btn-create-transaction" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center">
+                            <span id="btn-text-create-transaction">Guardar</span>
+                            <svg id="btn-spinner-create-transaction" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
                         <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
                     </div>
                 </form>
             `;
+
+          // Fetch accounts to populate the select
+          setTimeout(async () => {
+            try {
+              // Get session token if available
+              let headers = { "Content-Type": "application/json" };
+              const sessionData = await authClient.getSession();
+              if (sessionData?.data?.session?.token) {
+                headers["Authorization"] =
+                  `Bearer ${sessionData.data.session.token}`;
+              }
+
+              const response = await fetch("/api/accounts", { headers });
+              if (response.ok) {
+                const accounts = await response.json();
+                const select = document.getElementById("transaction-account");
+                if (select) {
+                  if (accounts.length === 0) {
+                    select.innerHTML =
+                      '<option value="" disabled selected>No tienes cuentas. Crea una primero.</option>';
+                  } else {
+                    select.innerHTML =
+                      '<option value="" disabled selected>Selecciona una cuenta</option>' +
+                      accounts
+                        .map(
+                          (acc) =>
+                            `<option value="${acc.id}">${acc.name} (${acc.currency} ${acc.balance})</option>`
+                        )
+                        .join("");
+                  }
+                }
+              }
+            } catch (e) {
+              console.error("Error fetching accounts", e);
+              const select = document.getElementById("transaction-account");
+              if (select)
+                select.innerHTML =
+                  '<option value="" disabled selected>Error al cargar cuentas</option>';
+            }
+          }, 100);
         } else if (modalType === "add-account") {
           modalHTML = `
                 <div class="flex items-center justify-between mb-4">
@@ -706,6 +851,7 @@ const initialPage = session ? "dashboard-page" : "landing-page";
           "reset-password": "reset-password-page",
           "verify-email": "email-verification-page",
           accounts: "accounts-page",
+          transactions: "transactions-page",
         };
 
         // If there's a page parameter and it's valid, show that page

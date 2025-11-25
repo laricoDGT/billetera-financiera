@@ -1,4 +1,81 @@
-<!-- ==================== 6. TRANSACTIONS PAGE ==================== -->
+---
+import { auth } from "../lib/auth";
+import { query } from "../lib/db";
+
+const session = await auth.api.getSession({
+  headers: Astro.request.headers,
+});
+
+let transactions = [];
+
+if (session) {
+  const result = await query(
+    `SELECT t.*, a.name as account_name 
+         FROM financial_transactions t
+         LEFT JOIN financial_accounts a ON t.account_id = a.id
+         WHERE t.user_id = $1 
+         ORDER BY t.date DESC`,
+    [session.user.id]
+  );
+  transactions = result.rows;
+}
+
+// Helper to group transactions by date
+const groupTransactionsByDate = (transactions: any[]) => {
+  const groups: Record<string, any[]> = {};
+
+  transactions.forEach((transaction) => {
+    const date = new Date(transaction.date);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    let key = date.toLocaleDateString("es-ES", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    // Check for Today and Yesterday
+    if (date.toDateString() === today.toDateString()) {
+      key = "HOY";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      key = "AYER";
+    } else {
+      // Capitalize first letter
+      key = key.charAt(0).toUpperCase() + key.slice(1);
+    }
+
+    if (!groups[key]) {
+      groups[key] = [];
+    }
+    groups[key].push(transaction);
+  });
+
+  return groups;
+};
+
+const groupedTransactions = groupTransactionsByDate(transactions);
+
+// Helper to format currency
+const formatCurrency = (amount: number | string) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(Number(amount));
+};
+
+// Helper to format time
+const formatTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("es-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+---
+
 <div
   id="transactions-page"
   class="hidden min-h-screen bg-gray-50 dark:bg-slate-900"
@@ -113,159 +190,89 @@
 
     <!-- Transactions List -->
     <div class="space-y-4">
-      <!-- Today -->
-      <div>
-        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">
-          HOY
-        </h3>
-        <div
-          class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 divide-y divide-gray-200 dark:divide-slate-700"
-        >
-          <div
-            class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700 transition"
-          >
-            <div class="flex items-center space-x-4">
-              <div
-                class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center"
-              >
-                <span class="text-2xl">🍕</span>
-              </div>
-              <div>
-                <div class="font-semibold text-gray-900 dark:text-white">
-                  Pizza Express
-                </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                  14:30 • Alimentación
-                </div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="font-bold text-red-600">-$24.50</div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">
-                **** 4532
-              </div>
-            </div>
+      {
+        transactions.length === 0 ? (
+          <div class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-slate-800 rounded-2xl shadow-sm">
+            No hay transacciones registradas.
           </div>
-          <div
-            class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700 transition"
-          >
-            <div class="flex items-center space-x-4">
-              <div
-                class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center"
-              >
-                <span class="text-2xl">☕</span>
-              </div>
+        ) : (
+          Object.entries(groupedTransactions).map(
+            ([dateGroup, groupTransactions]) => (
               <div>
-                <div class="font-semibold text-gray-900 dark:text-white">
-                  Starbucks
-                </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                  10:15 • Alimentación
-                </div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="font-bold text-red-600">-$8.50</div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">
-                **** 4532
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Yesterday -->
-      <div>
-        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">
-          AYER
-        </h3>
-        <div
-          class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 divide-y divide-gray-200 dark:divide-slate-700"
-        >
-          <div
-            class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700 transition"
-          >
-            <div class="flex items-center space-x-4">
-              <div
-                class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center"
-              >
-                <span class="text-2xl">💰</span>
-              </div>
-              <div>
-                <div class="font-semibold text-gray-900 dark:text-white">
-                  Salario Mensual
-                </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                  09:00 • Ingreso
-                </div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="font-bold text-green-600">+$3,500.00</div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">
-                **** 4532
-              </div>
-            </div>
-          </div>
-          <div
-            class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700 transition"
-          >
-            <div class="flex items-center space-x-4">
-              <div
-                class="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-xl flex items-center justify-center"
-              >
-                <span class="text-2xl">🏠</span>
-              </div>
-              <div>
-                <div class="font-semibold text-gray-900 dark:text-white">
-                  Renta del Apartamento
-                </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                  15:30 • Hogar
+                <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase">
+                  {dateGroup}
+                </h3>
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 divide-y divide-gray-200 dark:divide-slate-700">
+                  {groupTransactions.map((transaction) => (
+                    <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                      <div class="flex items-center space-x-4">
+                        <div
+                          class={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
+                            transaction.type === "Ingreso"
+                              ? "bg-green-100 dark:bg-green-900/20 text-green-600"
+                              : "bg-red-100 dark:bg-red-900/20 text-red-600"
+                          }`}
+                        >
+                          {transaction.category === "Alimentación" && "🍔"}
+                          {transaction.category === "Transporte" && "🚗"}
+                          {transaction.category === "Entretenimiento" && "🎮"}
+                          {transaction.category === "Hogar" && "🏠"}
+                          {transaction.category === "Salud" && "💊"}
+                          {transaction.category === "Educación" && "📚"}
+                          {transaction.category === "Salario" && "💰"}
+                          {![
+                            "Alimentación",
+                            "Transporte",
+                            "Entretenimiento",
+                            "Hogar",
+                            "Salud",
+                            "Educación",
+                            "Salario",
+                          ].includes(transaction.category) && "📝"}
+                        </div>
+                        <div>
+                          <div class="font-bold text-gray-900 dark:text-white">
+                            {transaction.description || transaction.category}
+                          </div>
+                          <div class="text-sm text-gray-500 dark:text-gray-400">
+                            {formatTime(transaction.date)} •{" "}
+                            {transaction.category}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <div
+                          class={`font-bold ${
+                            transaction.type === "Ingreso"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {transaction.type === "Ingreso" ? "+" : "-"}
+                          {formatCurrency(transaction.amount)}
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                          {transaction.account_name || "Cuenta eliminada"}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-            <div class="text-right">
-              <div class="font-bold text-red-600">-$850.00</div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">
-                **** 4532
-              </div>
-            </div>
-          </div>
-          <div
-            class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700 transition"
-          >
-            <div class="flex items-center space-x-4">
-              <div
-                class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center"
-              >
-                <span class="text-2xl">🚕</span>
-              </div>
-              <div>
-                <div class="font-semibold text-gray-900 dark:text-white">
-                  Uber
-                </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                  18:45 • Transporte
-                </div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="font-bold text-red-600">-$12.80</div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">
-                **** 4532
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Load More -->
-      <div class="text-center pt-4">
-        <button class="text-indigo-600 hover:text-indigo-700 font-medium"
-          >Cargar más transacciones</button
-        >
-      </div>
+            )
+          )
+        )
+      }
     </div>
+
+    {
+      transactions.length > 0 && (
+        <div class="mt-8 text-center">
+          <button class="text-indigo-600 hover:text-indigo-700 font-medium">
+            Cargar más transacciones
+          </button>
+        </div>
+      )
+    }
   </div>
 </div>
