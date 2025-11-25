@@ -526,6 +526,26 @@ const initialPage = session ? "dashboard-page" : "landing-page";
               `Bearer ${sessionData.data.session.token}`;
           }
 
+          // Check if category exists, if not create it
+          const datalist = document.getElementById("category-list");
+          let categoryExists = false;
+          if (datalist) {
+            const options = Array.from(datalist.options);
+            categoryExists = options.some((opt) => opt.value === category);
+          }
+
+          if (!categoryExists && category) {
+            try {
+              await fetch("/api/categories", {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({ name: category, icon: "📝", budget: 0 }),
+              });
+            } catch (e) {
+              console.error("Error auto-creating category", e);
+            }
+          }
+
           const response = await fetch("/api/transactions", {
             method: "POST",
             headers: headers,
@@ -575,6 +595,183 @@ const initialPage = session ? "dashboard-page" : "landing-page";
         }
       };
 
+      // Create Category
+      window.createCategory = async function () {
+        const name = document.getElementById("category-name").value;
+        const icon = document.getElementById("category-icon").value;
+        const budget = document.getElementById("category-budget").value;
+
+        const btn = document.getElementById("btn-create-category");
+        const btnText = document.getElementById("btn-text-create-category");
+        const btnSpinner = document.getElementById(
+          "btn-spinner-create-category"
+        );
+
+        // Show loading
+        if (btn && btnText && btnSpinner) {
+          btn.disabled = true;
+          btnText.textContent = "Creando...";
+          btnSpinner.classList.remove("hidden");
+        }
+
+        try {
+          let headers = { "Content-Type": "application/json" };
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch("/api/categories", {
+            method: "POST",
+            headers: headers,
+            credentials: "include",
+            body: JSON.stringify({ name, icon, budget }),
+          });
+
+          if (response.ok) {
+            showToast("Categoría creada exitosamente", "success");
+            closeModal();
+            setTimeout(() => {
+              window.location.href = "/?page=categories";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            showToast(
+              `Error: ${errorData.error || "Error al crear la categoría"}`,
+              "error"
+            );
+            if (btn && btnText && btnSpinner) {
+              btn.disabled = false;
+              btnText.textContent = "Crear";
+              btnSpinner.classList.add("hidden");
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+          if (btn && btnText && btnSpinner) {
+            btn.disabled = false;
+            btnText.textContent = "Crear";
+            btnSpinner.classList.add("hidden");
+          }
+        }
+      };
+
+      // Edit Category
+      window.openEditCategoryModal = function (id, name, icon, budget) {
+        showModal("edit-category");
+        setTimeout(() => {
+          document.getElementById("edit-category-id").value = id;
+          document.getElementById("edit-category-name").value = name;
+          document.getElementById("edit-category-icon").value = icon;
+          document.getElementById("edit-category-budget").value = budget;
+        }, 50);
+      };
+
+      window.updateCategory = async function () {
+        const id = document.getElementById("edit-category-id").value;
+        const name = document.getElementById("edit-category-name").value;
+        const icon = document.getElementById("edit-category-icon").value;
+        const budget = document.getElementById("edit-category-budget").value;
+
+        const btn = document.getElementById("btn-update-category");
+        const btnText = document.getElementById("btn-text-update-category");
+        const btnSpinner = document.getElementById(
+          "btn-spinner-update-category"
+        );
+
+        if (btn && btnText && btnSpinner) {
+          btn.disabled = true;
+          btnText.textContent = "Actualizando...";
+          btnSpinner.classList.remove("hidden");
+        }
+
+        try {
+          let headers = { "Content-Type": "application/json" };
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch(`/api/categories/${id}`, {
+            method: "PUT",
+            headers: headers,
+            body: JSON.stringify({ name, icon, budget }),
+          });
+
+          if (response.ok) {
+            showToast("Categoría actualizada exitosamente", "success");
+            closeModal();
+            setTimeout(() => {
+              window.location.href = "/?page=categories";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            showToast(
+              `Error: ${errorData.error || "Error al actualizar la categoría"}`,
+              "error"
+            );
+            if (btn && btnText && btnSpinner) {
+              btn.disabled = false;
+              btnText.textContent = "Actualizar";
+              btnSpinner.classList.add("hidden");
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+          if (btn && btnText && btnSpinner) {
+            btn.disabled = false;
+            btnText.textContent = "Actualizar";
+            btnSpinner.classList.add("hidden");
+          }
+        }
+      };
+
+      window.deleteCategory = async function (id) {
+        if (!confirm("¿Estás seguro de que deseas eliminar esta categoría?")) {
+          return;
+        }
+
+        try {
+          let headers = { "Content-Type": "application/json" };
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch(`/api/categories/${id}`, {
+            method: "DELETE",
+            headers: headers,
+          });
+
+          if (response.ok) {
+            showToast("Categoría eliminada exitosamente", "success");
+            setTimeout(() => {
+              window.location.href = "/?page=categories";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            showToast(
+              `Error: ${errorData.error || "Error al eliminar la categoría"}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+        }
+      };
+
       // Modal Functions
       window.showModal = function (modalType) {
         const overlay = document.getElementById("modal-overlay");
@@ -612,16 +809,8 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Categoría</label>
-                        <select id="transaction-category" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                            <option value="Alimentación">🍔 Alimentación</option>
-                            <option value="Transporte">🚗 Transporte</option>
-                            <option value="Entretenimiento">🎮 Entretenimiento</option>
-                            <option value="Hogar">🏠 Hogar</option>
-                            <option value="Salud">💊 Salud</option>
-                            <option value="Educación">📚 Educación</option>
-                            <option value="Salario">💰 Salario</option>
-                            <option value="Otros">📝 Otros</option>
-                        </select>
+                        <input list="category-list" id="transaction-category" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="Selecciona o escribe..." required autocomplete="off">
+                        <datalist id="category-list"></datalist>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descripción</label>
@@ -678,6 +867,32 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                 select.innerHTML =
                   '<option value="" disabled selected>Error al cargar cuentas</option>';
             }
+
+            // Fetch categories
+            try {
+              let headers = { "Content-Type": "application/json" };
+              const sessionData = await authClient.getSession();
+              if (sessionData?.data?.session?.token) {
+                headers["Authorization"] =
+                  `Bearer ${sessionData.data.session.token}`;
+              }
+
+              const response = await fetch("/api/categories", { headers });
+              if (response.ok) {
+                const categories = await response.json();
+                const datalist = document.getElementById("category-list");
+                if (datalist) {
+                  datalist.innerHTML = categories
+                    .map(
+                      (cat) =>
+                        `<option value="${cat.name}">${cat.icon} ${cat.name}</option>`
+                    )
+                    .join("");
+                }
+              }
+            } catch (e) {
+              console.error("Error fetching categories", e);
+            }
           }, 100);
         } else if (modalType === "add-account") {
           modalHTML = `
@@ -729,21 +944,65 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                         </svg>
                     </button>
                 </div>
-                <form class="space-y-4">
+                <form class="space-y-4" onsubmit="event.preventDefault(); createCategory()">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre</label>
-                        <input type="text" placeholder="Ej: Gimnasio" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" id="category-name" placeholder="Ej: Gimnasio" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Icono/Emoji</label>
-                        <input type="text" placeholder="💪" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" id="category-icon" placeholder="💪" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Presupuesto Mensual</label>
-                        <input type="number" placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        <input type="number" id="category-budget" placeholder="0.00" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div class="flex gap-3 pt-4">
-                        <button type="button" onclick="closeModal(); showToast('Categoría creada exitosamente', 'success')" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium">Crear</button>
+                        <button type="submit" id="btn-create-category" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center">
+                            <span id="btn-text-create-category">Crear</span>
+                            <svg id="btn-spinner-create-category" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
+                    </div>
+                </form>
+            `;
+        } else if (modalType === "edit-category") {
+          // data-id, data-name, etc should be set before calling showModal or passed in some way.
+          // Actually, we can just populate the fields after showing the modal.
+          modalHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Editar Categoría</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4" onsubmit="event.preventDefault(); updateCategory()">
+                    <input type="hidden" id="edit-category-id">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre</label>
+                        <input type="text" id="edit-category-name" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Icono/Emoji</label>
+                        <input type="text" id="edit-category-icon" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Presupuesto Mensual</label>
+                        <input type="number" id="edit-category-budget" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" id="btn-update-category" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center">
+                            <span id="btn-text-update-category">Actualizar</span>
+                            <svg id="btn-spinner-update-category" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
                         <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
                     </div>
                 </form>
@@ -852,6 +1111,7 @@ const initialPage = session ? "dashboard-page" : "landing-page";
           "verify-email": "email-verification-page",
           accounts: "accounts-page",
           transactions: "transactions-page",
+          categories: "categories-page",
         };
 
         // If there's a page parameter and it's valid, show that page

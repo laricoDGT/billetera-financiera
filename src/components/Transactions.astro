@@ -7,17 +7,25 @@ const session = await auth.api.getSession({
 });
 
 let transactions = [];
+let categories = [];
 
 if (session) {
   const result = await query(
-    `SELECT t.*, a.name as account_name 
+    `SELECT t.*, a.name as account_name, c.icon as category_icon
          FROM financial_transactions t
          LEFT JOIN financial_accounts a ON t.account_id = a.id
+         LEFT JOIN financial_categories c ON t.category = c.name AND t.user_id = c.user_id
          WHERE t.user_id = $1 
          ORDER BY t.date DESC`,
     [session.user.id]
   );
   transactions = result.rows;
+
+  const categoriesResult = await query(
+    `SELECT name FROM financial_categories WHERE user_id = $1 ORDER BY name ASC`,
+    [session.user.id]
+  );
+  categories = categoriesResult.rows;
 }
 
 // Helper to group transactions by date
@@ -153,9 +161,11 @@ const formatTime = (dateString: string) => {
             class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
           >
             <option>Todas</option>
-            <option>Alimentación</option>
-            <option>Transporte</option>
-            <option>Entretenimiento</option>
+            {
+              categories.map((cat) => (
+                <option value={cat.name}>{cat.name}</option>
+              ))
+            }
           </select>
         </div>
         <div>
@@ -213,22 +223,7 @@ const formatTime = (dateString: string) => {
                               : "bg-red-100 dark:bg-red-900/20 text-red-600"
                           }`}
                         >
-                          {transaction.category === "Alimentación" && "🍔"}
-                          {transaction.category === "Transporte" && "🚗"}
-                          {transaction.category === "Entretenimiento" && "🎮"}
-                          {transaction.category === "Hogar" && "🏠"}
-                          {transaction.category === "Salud" && "💊"}
-                          {transaction.category === "Educación" && "📚"}
-                          {transaction.category === "Salario" && "💰"}
-                          {![
-                            "Alimentación",
-                            "Transporte",
-                            "Entretenimiento",
-                            "Hogar",
-                            "Salud",
-                            "Educación",
-                            "Salario",
-                          ].includes(transaction.category) && "📝"}
+                          {transaction.category_icon || "📝"}
                         </div>
                         <div>
                           <div class="font-bold text-gray-900 dark:text-white">
