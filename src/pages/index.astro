@@ -333,13 +333,30 @@ const initialPage = session ? "dashboard-page" : "landing-page";
     <Modal />
     <Toast />
 
+    <script>
+      import { authClient } from "../lib/auth-client";
+
+      // Expose authClient to window for debugging
+      // @ts-ignore
+      window.authClient = authClient;
+
+      // Check session on load
+      authClient.getSession().then(({ data, error }) => {
+        if (data) {
+          console.log("Client-side: Session active", data);
+        } else {
+          console.log("Client-side: No session", error);
+        }
+      });
+    </script>
+
     <script is:inline define:vars={{ initialPage }}>
       // Dark Mode Toggle
       window.toggleDarkMode = function () {
         document.body.classList.toggle("dark");
         localStorage.setItem(
           "darkMode",
-          document.body.classList.contains("dark"),
+          document.body.classList.contains("dark")
         );
       };
 
@@ -383,7 +400,7 @@ const initialPage = session ? "dashboard-page" : "landing-page";
 
           // Dispatch event for components to react
           window.dispatchEvent(
-            new CustomEvent("pageChanged", { detail: { pageId } }),
+            new CustomEvent("pageChanged", { detail: { pageId } })
           );
         }
       };
@@ -392,6 +409,81 @@ const initialPage = session ? "dashboard-page" : "landing-page";
       window.toggleSidebar = function () {
         const sidebar = document.getElementById("sidebar");
         sidebar.classList.toggle("hidden");
+      };
+
+      // Create Account
+      window.createAccount = async function () {
+        const name = document.getElementById("account-name").value;
+        const type = document.getElementById("account-type").value;
+        const balance = document.getElementById("account-balance").value;
+
+        const btn = document.getElementById("btn-create-account");
+        const btnText = document.getElementById("btn-text-create-account");
+        const btnSpinner = document.getElementById(
+          "btn-spinner-create-account"
+        );
+
+        // Show loading
+        if (btn && btnText && btnSpinner) {
+          btn.disabled = true;
+          btnText.textContent = "Creando...";
+          btnSpinner.classList.remove("hidden");
+        }
+
+        try {
+          // Get session token if available to ensure auth works
+          let headers = {
+            "Content-Type": "application/json",
+          };
+
+          // Try to get token from authClient
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            // Add Bearer token as fallback/primary auth method
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch("/api/accounts", {
+            method: "POST",
+            headers: headers,
+            credentials: "include", // Ensure cookies are sent too
+            body: JSON.stringify({ name, type, balance }),
+          });
+
+          if (response.ok) {
+            showToast("Cuenta creada exitosamente", "success");
+            closeModal();
+            // Reload page to show new account and stay on accounts page
+            setTimeout(() => {
+              window.location.href = "/?page=accounts";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            console.error("Error creating account:", errorData);
+            showToast(
+              `Error: ${errorData.error || "Error al crear la cuenta"}`,
+              "error"
+            );
+            // Reset button
+            if (btn && btnText && btnSpinner) {
+              btn.disabled = false;
+              btnText.textContent = "Crear";
+              btnSpinner.classList.add("hidden");
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+          // Reset button
+          if (btn && btnText && btnSpinner) {
+            btn.disabled = false;
+            btnText.textContent = "Crear";
+            btnSpinner.classList.add("hidden");
+          }
+        }
       };
 
       // Modal Functions
@@ -452,26 +544,32 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                         </svg>
                     </button>
                 </div>
-                <form class="space-y-4">
+                <form class="space-y-4" onsubmit="event.preventDefault(); createAccount()">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre de la Cuenta</label>
-                        <input type="text" placeholder="Mi Cuenta Bancaria" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" id="account-name" placeholder="Mi Cuenta Bancaria" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
-                        <select class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
-                            <option>Cuenta de Ahorro</option>
-                            <option>Cuenta Corriente</option>
-                            <option>Tarjeta de Crédito</option>
-                            <option>Efectivo</option>
+                        <select id="account-type" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="Cuenta de Ahorro">Cuenta de Ahorro</option>
+                            <option value="Cuenta Corriente">Cuenta Corriente</option>
+                            <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+                            <option value="Efectivo">Efectivo</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Balance Inicial</label>
-                        <input type="number" placeholder="0.00" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        <input type="number" id="account-balance" placeholder="0.00" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div class="flex gap-3 pt-4">
-                        <button type="button" onclick="closeModal(); showToast('Cuenta creada exitosamente', 'success')" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium">Crear</button>
+                        <button type="submit" id="btn-create-account" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center">
+                            <span id="btn-text-create-account">Crear</span>
+                            <svg id="btn-spinner-create-account" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
                         <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
                     </div>
                 </form>
@@ -607,6 +705,7 @@ const initialPage = session ? "dashboard-page" : "landing-page";
         const pageMap = {
           "reset-password": "reset-password-page",
           "verify-email": "email-verification-page",
+          accounts: "accounts-page",
         };
 
         // If there's a page parameter and it's valid, show that page
@@ -618,7 +717,7 @@ const initialPage = session ? "dashboard-page" : "landing-page";
           window.history.replaceState(
             {},
             document.title,
-            window.location.pathname,
+            window.location.pathname
           );
         } else {
           // Otherwise show the initial page (landing or dashboard)

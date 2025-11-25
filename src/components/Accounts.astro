@@ -1,3 +1,35 @@
+---
+import { auth } from "../lib/auth";
+import { query } from "../lib/db";
+
+const session = await auth.api.getSession({
+  headers: Astro.request.headers,
+});
+
+let accounts = [];
+let totalBalance = 0;
+
+if (session) {
+  const result = await query(
+    "SELECT * FROM financial_accounts WHERE user_id = $1 ORDER BY created_at DESC",
+    [session.user.id]
+  );
+  accounts = result.rows;
+  totalBalance = accounts.reduce(
+    (acc, account) => acc + parseFloat(account.balance),
+    0
+  );
+}
+
+// Helper to format currency
+const formatCurrency = (amount: number | string) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(Number(amount));
+};
+---
+
 <div
   id="accounts-page"
   class="hidden min-h-screen bg-gray-50 dark:bg-slate-900"
@@ -55,166 +87,78 @@
       class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-xl p-8 text-white mb-8"
     >
       <div class="text-sm opacity-90 mb-2">Balance Total</div>
-      <div class="text-5xl font-bold mb-6">$12,450.00</div>
+      <div class="text-5xl font-bold mb-6">{formatCurrency(totalBalance)}</div>
       <div class="grid grid-cols-3 gap-4">
         <div>
           <div class="text-xs opacity-75">Ingresos</div>
-          <div class="text-xl font-semibold">$8,300</div>
+          <div class="text-xl font-semibold">$0.00</div>
         </div>
         <div>
           <div class="text-xs opacity-75">Gastos</div>
-          <div class="text-xl font-semibold">-$3,240</div>
+          <div class="text-xl font-semibold">$0.00</div>
         </div>
         <div>
           <div class="text-xs opacity-75">Ahorros</div>
-          <div class="text-xl font-semibold">$5,200</div>
+          <div class="text-xl font-semibold">$0.00</div>
         </div>
       </div>
     </div>
 
     <!-- Accounts Grid -->
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Account Card 1 -->
-      <div
-        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700 hover:shadow-lg transition"
-      >
-        <div class="flex items-start justify-between mb-4">
-          <div
-            class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center"
-          >
-            <svg
-              class="w-6 h-6 text-blue-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-              ></path>
-            </svg>
+      {
+        accounts.map((account) => (
+          <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700 hover:shadow-lg transition">
+            <div class="flex items-start justify-between mb-4">
+              <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+                <svg
+                  class="w-6 h-6 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                  />
+                </svg>
+              </div>
+              <button class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+            </div>
+            <div class="mb-2">
+              <div class="text-sm text-gray-500 dark:text-gray-400">
+                {account.name}
+              </div>
+              <div class="text-2xl font-bold text-gray-900 dark:text-white">
+                {formatCurrency(account.balance)}
+              </div>
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+              {account.type}
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-green-600 font-medium">Activo</span>
+              <span class="text-gray-500 dark:text-gray-400">
+                {account.currency}
+              </span>
+            </div>
           </div>
-          <button class="text-gray-400 hover:text-gray-600">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
-              ></path>
-            </svg>
-          </button>
-        </div>
-        <div class="mb-2">
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            Banco Principal
-          </div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">
-            $8,450.00
-          </div>
-        </div>
-        <div class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-          **** 4532
-        </div>
-        <div class="flex items-center justify-between text-sm">
-          <span class="text-green-600 font-medium">+12% este mes</span>
-          <span class="text-gray-500 dark:text-gray-400">Débito</span>
-        </div>
-      </div>
+        ))
+      }
 
-      <!-- Account Card 2 -->
-      <div
-        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700 hover:shadow-lg transition"
-      >
-        <div class="flex items-start justify-between mb-4">
-          <div
-            class="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center"
-          >
-            <svg
-              class="w-6 h-6 text-purple-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-              ></path>
-            </svg>
+      {
+        accounts.length === 0 && (
+          <div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+            No tienes cuentas registradas. ¡Crea una nueva para empezar!
           </div>
-          <button class="text-gray-400 hover:text-gray-600">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
-              ></path>
-            </svg>
-          </button>
-        </div>
-        <div class="mb-2">
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            Tarjeta Crédito
-          </div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">
-            $2,100.00
-          </div>
-        </div>
-        <div class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-          **** 8721
-        </div>
-        <div class="flex items-center justify-between text-sm">
-          <span class="text-orange-600 font-medium">$800 disponible</span>
-          <span class="text-gray-500 dark:text-gray-400">Crédito</span>
-        </div>
-      </div>
-
-      <!-- Account Card 3 -->
-      <div
-        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700 hover:shadow-lg transition"
-      >
-        <div class="flex items-start justify-between mb-4">
-          <div
-            class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center"
-          >
-            <svg
-              class="w-6 h-6 text-green-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              >
-              </path>
-            </svg>
-          </div>
-          <button class="text-gray-400 hover:text-gray-600">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
-              ></path>
-            </svg>
-          </button>
-        </div>
-        <div class="mb-2">
-          <div class="text-sm text-gray-500 dark:text-gray-400">
-            Cuenta Ahorros
-          </div>
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">
-            $5,200.00
-          </div>
-        </div>
-        <div class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-          **** 3498
-        </div>
-        <div class="flex items-center justify-between text-sm">
-          <span class="text-green-600 font-medium">+24% este mes</span>
-          <span class="text-gray-500 dark:text-gray-400">Ahorro</span>
-        </div>
-      </div>
+        )
+      }
     </div>
   </div>
 </div>
