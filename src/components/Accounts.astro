@@ -8,6 +8,8 @@ const session = await auth.api.getSession({
 
 let accounts = [];
 let totalBalance = 0;
+let totalIncome = 0;
+let totalExpenses = 0;
 
 if (session) {
   const result = await query(
@@ -19,7 +21,25 @@ if (session) {
     (acc, account) => acc + parseFloat(account.balance),
     0
   );
+
+  // Calculate Income and Expenses for the current month
+  const transactionsResult = await query(
+    `SELECT type, amount FROM financial_transactions 
+     WHERE user_id = $1 
+     AND date >= date_trunc('month', CURRENT_DATE)`,
+    [session.user.id]
+  );
+
+  transactionsResult.rows.forEach((t) => {
+    if (t.type === "Ingreso") {
+      totalIncome += parseFloat(t.amount);
+    } else if (t.type === "Gasto") {
+      totalExpenses += parseFloat(t.amount);
+    }
+  });
 }
+
+const totalSavings = totalIncome - totalExpenses;
 
 // Helper to format currency
 const formatCurrency = (amount: number | string) => {
@@ -90,16 +110,20 @@ const formatCurrency = (amount: number | string) => {
       <div class="text-5xl font-bold mb-6">{formatCurrency(totalBalance)}</div>
       <div class="grid grid-cols-3 gap-4">
         <div>
-          <div class="text-xs opacity-75">Ingresos</div>
-          <div class="text-xl font-semibold">$0.00</div>
+          <div class="text-xs opacity-75">Ingresos (Mes)</div>
+          <div class="text-xl font-semibold">{formatCurrency(totalIncome)}</div>
         </div>
         <div>
-          <div class="text-xs opacity-75">Gastos</div>
-          <div class="text-xl font-semibold">$0.00</div>
+          <div class="text-xs opacity-75">Gastos (Mes)</div>
+          <div class="text-xl font-semibold">
+            {formatCurrency(totalExpenses)}
+          </div>
         </div>
         <div>
-          <div class="text-xs opacity-75">Ahorros</div>
-          <div class="text-xl font-semibold">$0.00</div>
+          <div class="text-xs opacity-75">Ahorros (Mes)</div>
+          <div class="text-xl font-semibold">
+            {formatCurrency(totalSavings)}
+          </div>
         </div>
       </div>
     </div>
@@ -125,11 +149,33 @@ const formatCurrency = (amount: number | string) => {
                   />
                 </svg>
               </div>
-              <button class="text-gray-400 hover:text-gray-600">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                </svg>
-              </button>
+              <div class="relative">
+                <button
+                  onclick={`toggleAccountDropdown('dropdown-${account.id}', event)`}
+                  class="dropdown-btn text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition"
+                >
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                  </svg>
+                </button>
+                <div
+                  id={`dropdown-${account.id}`}
+                  class="dropdown-menu absolute right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-md shadow-lg py-1 z-10 hidden border border-gray-200 dark:border-slate-700"
+                >
+                  <button
+                    onclick={`openEditAccountModal('${account.id}', '${account.name}', '${account.type}', '${account.balance}')`}
+                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onclick={`deleteAccount('${account.id}')`}
+                    class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-slate-700"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="mb-2">
               <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -162,3 +208,32 @@ const formatCurrency = (amount: number | string) => {
     </div>
   </div>
 </div>
+
+<script is:inline>
+  window.toggleAccountDropdown = function (id, event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById(id);
+    const isHidden = dropdown.classList.contains("hidden");
+
+    // Close all other dropdowns
+    document.querySelectorAll(".dropdown-menu").forEach((menu) => {
+      menu.classList.add("hidden");
+    });
+
+    if (isHidden) {
+      dropdown.classList.remove("hidden");
+    }
+  };
+
+  // Close dropdowns when clicking outside
+  document.addEventListener("click", function (event) {
+    if (
+      !event.target.closest(".dropdown-menu") &&
+      !event.target.closest(".dropdown-btn")
+    ) {
+      document.querySelectorAll(".dropdown-menu").forEach((menu) => {
+        menu.classList.add("hidden");
+      });
+    }
+  });
+</script>

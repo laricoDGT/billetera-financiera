@@ -486,6 +486,122 @@ const initialPage = session ? "dashboard-page" : "landing-page";
         }
       };
 
+      // Edit Account
+      window.openEditAccountModal = function (id, name, type, balance) {
+        showModal("edit-account");
+        setTimeout(() => {
+          document.getElementById("edit-account-id").value = id;
+          document.getElementById("edit-account-name").value = name;
+          document.getElementById("edit-account-type").value = type;
+          document.getElementById("edit-account-balance").value = balance;
+        }, 50);
+      };
+
+      window.updateAccount = async function () {
+        const id = document.getElementById("edit-account-id").value;
+        const name = document.getElementById("edit-account-name").value;
+        const type = document.getElementById("edit-account-type").value;
+        const balance = document.getElementById("edit-account-balance").value;
+
+        const btn = document.getElementById("btn-update-account");
+        const btnText = document.getElementById("btn-text-update-account");
+        const btnSpinner = document.getElementById(
+          "btn-spinner-update-account"
+        );
+
+        if (btn && btnText && btnSpinner) {
+          btn.disabled = true;
+          btnText.textContent = "Actualizando...";
+          btnSpinner.classList.remove("hidden");
+        }
+
+        try {
+          let headers = { "Content-Type": "application/json" };
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch(`/api/accounts/${id}`, {
+            method: "PUT",
+            headers: headers,
+            body: JSON.stringify({ name, type, balance }),
+          });
+
+          if (response.ok) {
+            showToast("Cuenta actualizada exitosamente", "success");
+            closeModal();
+            setTimeout(() => {
+              window.location.href = "/?page=accounts";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            showToast(
+              `Error: ${errorData.error || "Error al actualizar la cuenta"}`,
+              "error"
+            );
+            if (btn && btnText && btnSpinner) {
+              btn.disabled = false;
+              btnText.textContent = "Actualizar";
+              btnSpinner.classList.add("hidden");
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+          if (btn && btnText && btnSpinner) {
+            btn.disabled = false;
+            btnText.textContent = "Actualizar";
+            btnSpinner.classList.add("hidden");
+          }
+        }
+      };
+
+      window.deleteAccount = async function (id) {
+        if (
+          !confirm(
+            "¿Estás seguro de que deseas eliminar esta cuenta? Se eliminarán también todas sus transacciones."
+          )
+        ) {
+          return;
+        }
+
+        try {
+          let headers = { "Content-Type": "application/json" };
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch(`/api/accounts/${id}`, {
+            method: "DELETE",
+            headers: headers,
+          });
+
+          if (response.ok) {
+            showToast("Cuenta eliminada exitosamente", "success");
+            setTimeout(() => {
+              window.location.href = "/?page=accounts";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            showToast(
+              `Error: ${errorData.error || "Error al eliminar la cuenta"}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+        }
+      };
+
       // Create Transaction
       window.createTransaction = async function () {
         const type = document.getElementById("transaction-type").value;
@@ -926,6 +1042,47 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                         <button type="submit" id="btn-create-account" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center">
                             <span id="btn-text-create-account">Crear</span>
                             <svg id="btn-spinner-create-account" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
+                    </div>
+                </form>
+            `;
+        } else if (modalType === "edit-account") {
+          modalHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Editar Cuenta</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4" onsubmit="event.preventDefault(); updateAccount()">
+                    <input type="hidden" id="edit-account-id">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre de la Cuenta</label>
+                        <input type="text" id="edit-account-name" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
+                        <select id="edit-account-type" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="Cuenta de Ahorro">Cuenta de Ahorro</option>
+                            <option value="Cuenta Corriente">Cuenta Corriente</option>
+                            <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+                            <option value="Efectivo">Efectivo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Balance Actual</label>
+                        <input type="number" id="edit-account-balance" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" id="btn-update-account" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center">
+                            <span id="btn-text-update-account">Actualizar</span>
+                            <svg id="btn-spinner-update-account" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
