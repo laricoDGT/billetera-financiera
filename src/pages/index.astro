@@ -784,9 +784,11 @@ const initialPage = session ? "dashboard-page" : "landing-page";
 
       // Create Debt
       window.createDebt = async function () {
-        console.log("createDebt called");
+        const type = document.getElementById("debt-type").value;
         const name = document.getElementById("debt-name").value;
         const amount = document.getElementById("debt-amount").value;
+        const installment = document.getElementById("debt-installment").value;
+        const term = document.getElementById("debt-term").value;
         const dueDate = document.getElementById("debt-due-date").value;
 
         const btn = document.getElementById("btn-create-debt");
@@ -801,27 +803,23 @@ const initialPage = session ? "dashboard-page" : "landing-page";
 
         try {
           let headers = { "Content-Type": "application/json" };
-          console.log("Fetching session...");
           const sessionData = await authClient.getSession();
-          console.log("Session data:", sessionData);
-
           if (sessionData?.data?.session?.token) {
-            console.log("Token found, adding to headers");
             headers["Authorization"] =
               `Bearer ${sessionData.data.session.token}`;
-          } else {
-            console.log("No token found in session data");
           }
 
-          console.log("Sending request to /api/debts");
           const response = await fetch("/api/debts", {
             method: "POST",
             headers: headers,
             credentials: "include",
             body: JSON.stringify({
+              type,
               name,
               total_amount: amount,
-              due_date: dueDate,
+              installment_amount: installment || null,
+              term: term || null,
+              due_date: dueDate || null,
             }),
           });
 
@@ -835,7 +833,6 @@ const initialPage = session ? "dashboard-page" : "landing-page";
             const errorData = await response
               .json()
               .catch(() => ({ error: "Error desconocido" }));
-            console.error("Error creating debt:", errorData);
             showToast(
               `Error: ${errorData.error || "Error al crear la deuda"}`,
               "error"
@@ -852,6 +849,218 @@ const initialPage = session ? "dashboard-page" : "landing-page";
           if (btn && btnText && btnSpinner) {
             btn.disabled = false;
             btnText.textContent = "Guardar";
+            btnSpinner.classList.add("hidden");
+          }
+        }
+      };
+
+      // Edit Debt
+      window.openEditDebtModal = function (
+        id,
+        type,
+        name,
+        amount,
+        installment,
+        term,
+        dueDate
+      ) {
+        showModal("edit-debt");
+        setTimeout(() => {
+          document.getElementById("edit-debt-id").value = id;
+          document.getElementById("edit-debt-type").value = type;
+          document.getElementById("edit-debt-name").value = name;
+          document.getElementById("edit-debt-amount").value = amount;
+          document.getElementById("edit-debt-installment").value =
+            installment || "";
+          document.getElementById("edit-debt-term").value = term || "";
+
+          if (dueDate) {
+            const date = new Date(dueDate);
+            const formattedDate = date.toISOString().split("T")[0];
+            document.getElementById("edit-debt-due-date").value = formattedDate;
+          }
+        }, 50);
+      };
+
+      window.updateDebt = async function () {
+        const id = document.getElementById("edit-debt-id").value;
+        const type = document.getElementById("edit-debt-type").value;
+        const name = document.getElementById("edit-debt-name").value;
+        const amount = document.getElementById("edit-debt-amount").value;
+        const installment = document.getElementById(
+          "edit-debt-installment"
+        ).value;
+        const term = document.getElementById("edit-debt-term").value;
+        const dueDate = document.getElementById("edit-debt-due-date").value;
+
+        const btn = document.getElementById("btn-update-debt");
+        const btnText = document.getElementById("btn-text-update-debt");
+        const btnSpinner = document.getElementById("btn-spinner-update-debt");
+
+        if (btn && btnText && btnSpinner) {
+          btn.disabled = true;
+          btnText.textContent = "Actualizando...";
+          btnSpinner.classList.remove("hidden");
+        }
+
+        try {
+          let headers = { "Content-Type": "application/json" };
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch(`/api/debts?id=${id}`, {
+            method: "PUT",
+            headers: headers,
+            body: JSON.stringify({
+              id,
+              type,
+              name,
+              total_amount: amount,
+              installment_amount: installment || null,
+              term: term || null,
+              due_date: dueDate || null,
+            }),
+          });
+
+          if (response.ok) {
+            showToast("Deuda actualizada exitosamente", "success");
+            closeModal();
+            setTimeout(() => {
+              window.location.href = "/?page=debts";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            showToast(
+              `Error: ${errorData.error || "Error al actualizar la deuda"}`,
+              "error"
+            );
+            if (btn && btnText && btnSpinner) {
+              btn.disabled = false;
+              btnText.textContent = "Actualizar";
+              btnSpinner.classList.add("hidden");
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+          if (btn && btnText && btnSpinner) {
+            btn.disabled = false;
+            btnText.textContent = "Actualizar";
+            btnSpinner.classList.add("hidden");
+          }
+        }
+      };
+
+      window.deleteDebt = async function (id) {
+        if (!confirm("¿Estás seguro de que deseas eliminar esta deuda?")) {
+          return;
+        }
+
+        try {
+          let headers = { "Content-Type": "application/json" };
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch(`/api/debts?id=${id}`, {
+            method: "DELETE",
+            headers: headers,
+          });
+
+          if (response.ok) {
+            showToast("Deuda eliminada exitosamente", "success");
+            setTimeout(() => {
+              window.location.href = "/?page=debts";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            showToast(
+              `Error: ${errorData.error || "Error al eliminar la deuda"}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+        }
+      };
+
+      // Pay Debt
+      window.openPayDebtModal = function (id, name, currentAmount) {
+        showModal("pay-debt");
+        setTimeout(() => {
+          document.getElementById("pay-debt-id").value = id;
+          document.getElementById("pay-debt-name").value = name;
+          document.getElementById("pay-debt-amount").value = "";
+        }, 50);
+      };
+
+      window.payDebt = async function () {
+        const id = document.getElementById("pay-debt-id").value;
+        const amount = document.getElementById("pay-debt-amount").value;
+
+        const btn = document.getElementById("btn-pay-debt");
+        const btnText = document.getElementById("btn-text-pay-debt");
+        const btnSpinner = document.getElementById("btn-spinner-pay-debt");
+
+        if (btn && btnText && btnSpinner) {
+          btn.disabled = true;
+          btnText.textContent = "Procesando...";
+          btnSpinner.classList.remove("hidden");
+        }
+
+        try {
+          let headers = { "Content-Type": "application/json" };
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch(`/api/debts/pay`, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({
+              id,
+              amount,
+            }),
+          });
+
+          if (response.ok) {
+            showToast("Pago registrado exitosamente", "success");
+            closeModal();
+            setTimeout(() => {
+              window.location.href = "/?page=debts";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            showToast(
+              `Error: ${errorData.error || "Error al registrar el pago"}`,
+              "error"
+            );
+            if (btn && btnText && btnSpinner) {
+              btn.disabled = false;
+              btnText.textContent = "Registrar Pago";
+              btnSpinner.classList.add("hidden");
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+          if (btn && btnText && btnSpinner) {
+            btn.disabled = false;
+            btnText.textContent = "Registrar Pago";
             btnSpinner.classList.add("hidden");
           }
         }
@@ -1328,21 +1537,127 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                 </div>
                 <form class="space-y-4" onsubmit="event.preventDefault(); createDebt()">
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
+                        <select id="debt-type" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="payable">Debo (Por Pagar)</option>
+                            <option value="receivable">Me Deben (Por Cobrar)</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre / Descripción</label>
                         <input type="text" id="debt-name" placeholder="Ej: Préstamo Banco" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto Total</label>
-                        <input type="number" id="debt-amount" placeholder="0.00" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto Total</label>
+                            <input type="number" id="debt-amount" placeholder="0.00" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cuota Mensual</label>
+                            <input type="number" id="debt-installment" placeholder="0.00" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha de Vencimiento</label>
-                        <input type="date" id="debt-due-date" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Plazo (Meses)</label>
+                            <input type="number" id="debt-term" placeholder="12" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha de Vencimiento</label>
+                            <input type="date" id="debt-due-date" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
                     </div>
                     <div class="flex gap-3 pt-4">
                         <button type="submit" id="btn-create-debt" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center">
                             <span id="btn-text-create-debt">Guardar</span>
                             <svg id="btn-spinner-create-debt" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
+                    </div>
+                </form>
+            `;
+        } else if (modalType === "edit-debt") {
+          modalHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Editar Deuda</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4" onsubmit="event.preventDefault(); updateDebt()">
+                    <input type="hidden" id="edit-debt-id">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
+                        <select id="edit-debt-type" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                            <option value="payable">Debo (Por Pagar)</option>
+                            <option value="receivable">Me Deben (Por Cobrar)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre / Descripción</label>
+                        <input type="text" id="edit-debt-name" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto Total</label>
+                            <input type="number" id="edit-debt-amount" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cuota Mensual</label>
+                            <input type="number" id="edit-debt-installment" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Plazo (Meses)</label>
+                            <input type="number" id="edit-debt-term" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha de Vencimiento</label>
+                            <input type="date" id="edit-debt-due-date" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" id="btn-update-debt" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center">
+                            <span id="btn-text-update-debt">Actualizar</span>
+                            <svg id="btn-spinner-update-debt" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
+                    </div>
+                </form>
+            `;
+        } else if (modalType === "pay-debt") {
+          modalHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Registrar Pago</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4" onsubmit="event.preventDefault(); payDebt()">
+                    <input type="hidden" id="pay-debt-id">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Deuda</label>
+                        <input type="text" id="pay-debt-name" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white bg-gray-100 dark:bg-slate-800" disabled>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto a Pagar</label>
+                        <input type="number" id="pay-debt-amount" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" id="btn-pay-debt" class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-medium flex justify-center items-center">
+                            <span id="btn-text-pay-debt">Registrar Pago</span>
+                            <svg id="btn-spinner-pay-debt" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
