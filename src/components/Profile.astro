@@ -582,11 +582,6 @@
       ) as HTMLButtonElement;
 
       // Debug logging
-      console.log("Password change attempt:", {
-        currentPassword: currentPassword ? "***" : "empty",
-        newPassword: newPassword ? "***" : "empty",
-        confirmPassword: confirmPassword ? "***" : "empty",
-      });
 
       // Validation
       if (!currentPassword || !newPassword || !confirmPassword) {
@@ -715,9 +710,6 @@
 
   // Listen for login events to reload user data
   window.addEventListener("userLoggedIn", () => {
-    console.log(
-      "User logged in event received in Profile, reloading profile data...",
-    );
     loadUserProfile();
   });
 

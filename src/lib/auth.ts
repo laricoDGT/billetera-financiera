@@ -18,7 +18,7 @@ if (!DATABASE_URL) {
     throw new Error("DATABASE_URL is not defined in environment variables");
 }
 
-console.log("DATABASE_URL configured:", DATABASE_URL.substring(0, 30) + "...");
+
 
 // Initialize Resend
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;

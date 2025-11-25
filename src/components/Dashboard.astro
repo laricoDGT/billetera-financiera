@@ -672,7 +672,7 @@
           // Listen for login events to reload user data
           // This fixes the issue where Google OAuth data persists after logout
           window.addEventListener("userLoggedIn", () => {
-            console.log(
+
               "User logged in event received, reloading user data..."
             );
             loadUserData();

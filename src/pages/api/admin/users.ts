@@ -3,7 +3,7 @@ import { auth } from "../../../lib/auth";
 
 export const GET: APIRoute = async ({ request }) => {
     try {
-        console.log("API: /api/admin/users called");
+
         console.log("Cookie Header:", request.headers.get("cookie"));
 
         const session = await auth.api.getSession({ headers: request.headers });

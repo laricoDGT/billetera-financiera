@@ -247,8 +247,6 @@ if (session) {
                             rememberMe,
                         });
 
-                        console.log("Login response:", { data, error });
-
                         if (error) {
                             console.error("Login error:", error);
                             showToast(
@@ -260,16 +258,10 @@ if (session) {
                             return;
                         }
 
-                        console.log(
-                            "Login successful, redirecting to dashboard",
-                        );
                         showToast("Sesión iniciada correctamente", "success");
 
                         // Force a full page reload to ensure session is recognized by server
                         setTimeout(() => {
-                            console.log(
-                                "Executing redirect with full page reload",
-                            );
                             window.location.href = "/dashboard";
                         }, 1000);
                     } catch (err) {

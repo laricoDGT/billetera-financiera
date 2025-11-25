@@ -32,7 +32,7 @@ export const GET: APIRoute = async ({ request }) => {
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
-  console.log("POST /api/accounts called");
+
 
   // Log headers for debugging
   const cookieHeader = request.headers.get("cookie");

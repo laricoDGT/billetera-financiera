@@ -5,7 +5,7 @@ import { auth } from "../../../lib/auth";
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
-  console.log("POST /api/debts called");
+
   const session = await auth.api.getSession({
     headers: request.headers,
   });
