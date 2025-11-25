@@ -306,6 +306,46 @@
         </a>
         <a
           href="#"
+          onclick="showPage('debts-page')"
+          class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          <span>Deudas</span>
+        </a>
+        <a
+          href="#"
+          onclick="showPage('invoices-page')"
+          class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            ></path>
+          </svg>
+          <span>Invoices</span>
+        </a>
+        <a
+          href="#"
           onclick="showPage('reminders-page')"
           class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
         >
@@ -581,10 +621,10 @@
                 const userInitialsNav =
                   document.getElementById("user-initials-nav");
                 const userAvatarNav = document.getElementById(
-                  "user-avatar-nav",
+                  "user-avatar-nav"
                 ) as HTMLImageElement;
                 const userAvatarPlaceholderNav = document.getElementById(
-                  "user-avatar-placeholder-nav",
+                  "user-avatar-placeholder-nav"
                 );
 
                 if (userNameNav) {
@@ -633,7 +673,7 @@
           // This fixes the issue where Google OAuth data persists after logout
           window.addEventListener("userLoggedIn", () => {
             console.log(
-              "User logged in event received, reloading user data...",
+              "User logged in event received, reloading user data..."
             );
             loadUserData();
           });
@@ -644,7 +684,7 @@
             document.getElementById("user-dropdown-menu");
           const userMenuIcon = document.getElementById("user-menu-icon");
           const dropdownLogoutBtn = document.getElementById(
-            "dropdown-logout-btn",
+            "dropdown-logout-btn"
           );
 
           // Toggle dropdown menu
@@ -715,7 +755,7 @@
                 const dropdownUserName =
                   document.getElementById("dropdown-user-name");
                 const dropdownUserEmail = document.getElementById(
-                  "dropdown-user-email",
+                  "dropdown-user-email"
                 );
 
                 if (dropdownUserName) {

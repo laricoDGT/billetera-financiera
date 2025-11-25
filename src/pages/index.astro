@@ -13,6 +13,8 @@ import EmailVerification from "../components/EmailVerification.astro";
 import Accounts from "../components/Accounts.astro";
 import Transactions from "../components/Transactions.astro";
 import Categories from "../components/Categories.astro";
+import Debts from "../components/Debts.astro";
+import Invoices from "../components/Invoices.astro";
 import Reminders from "../components/Reminders.astro";
 import Notifications from "../components/Notifications.astro";
 import Profile from "../components/Profile.astro";
@@ -327,6 +329,8 @@ const initialPage = session ? "dashboard-page" : "landing-page";
     <Accounts />
     <Transactions />
     <Categories />
+    <Debts />
+    <Invoices />
     <Reminders />
     <Notifications />
     <Profile />
@@ -379,6 +383,8 @@ const initialPage = session ? "dashboard-page" : "landing-page";
           "accounts-page",
           "transactions-page",
           "categories-page",
+          "debts-page",
+          "invoices-page",
           "reminders-page",
           "notifications-page",
           "profile-page",
@@ -776,6 +782,152 @@ const initialPage = session ? "dashboard-page" : "landing-page";
         }
       };
 
+      // Create Debt
+      window.createDebt = async function () {
+        console.log("createDebt called");
+        const name = document.getElementById("debt-name").value;
+        const amount = document.getElementById("debt-amount").value;
+        const dueDate = document.getElementById("debt-due-date").value;
+
+        const btn = document.getElementById("btn-create-debt");
+        const btnText = document.getElementById("btn-text-create-debt");
+        const btnSpinner = document.getElementById("btn-spinner-create-debt");
+
+        if (btn && btnText && btnSpinner) {
+          btn.disabled = true;
+          btnText.textContent = "Guardando...";
+          btnSpinner.classList.remove("hidden");
+        }
+
+        try {
+          let headers = { "Content-Type": "application/json" };
+          console.log("Fetching session...");
+          const sessionData = await authClient.getSession();
+          console.log("Session data:", sessionData);
+
+          if (sessionData?.data?.session?.token) {
+            console.log("Token found, adding to headers");
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          } else {
+            console.log("No token found in session data");
+          }
+
+          console.log("Sending request to /api/debts");
+          const response = await fetch("/api/debts", {
+            method: "POST",
+            headers: headers,
+            credentials: "include",
+            body: JSON.stringify({
+              name,
+              total_amount: amount,
+              due_date: dueDate,
+            }),
+          });
+
+          if (response.ok) {
+            showToast("Deuda creada exitosamente", "success");
+            closeModal();
+            setTimeout(() => {
+              window.location.href = "/?page=debts";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            console.error("Error creating debt:", errorData);
+            showToast(
+              `Error: ${errorData.error || "Error al crear la deuda"}`,
+              "error"
+            );
+            if (btn && btnText && btnSpinner) {
+              btn.disabled = false;
+              btnText.textContent = "Guardar";
+              btnSpinner.classList.add("hidden");
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+          if (btn && btnText && btnSpinner) {
+            btn.disabled = false;
+            btnText.textContent = "Guardar";
+            btnSpinner.classList.add("hidden");
+          }
+        }
+      };
+
+      // Create Invoice
+      window.createInvoice = async function () {
+        const clientName = document.getElementById("invoice-client").value;
+        const amount = document.getElementById("invoice-amount").value;
+        const issueDate = document.getElementById("invoice-issue-date").value;
+        const dueDate = document.getElementById("invoice-due-date").value;
+
+        const btn = document.getElementById("btn-create-invoice");
+        const btnText = document.getElementById("btn-text-create-invoice");
+        const btnSpinner = document.getElementById(
+          "btn-spinner-create-invoice"
+        );
+
+        if (btn && btnText && btnSpinner) {
+          btn.disabled = true;
+          btnText.textContent = "Guardando...";
+          btnSpinner.classList.remove("hidden");
+        }
+
+        try {
+          let headers = { "Content-Type": "application/json" };
+          const sessionData = await authClient.getSession();
+          if (sessionData?.data?.session?.token) {
+            headers["Authorization"] =
+              `Bearer ${sessionData.data.session.token}`;
+          }
+
+          const response = await fetch("/api/invoices", {
+            method: "POST",
+            headers: headers,
+            credentials: "include",
+            body: JSON.stringify({
+              client_name: clientName,
+              amount,
+              issue_date: issueDate,
+              due_date: dueDate,
+            }),
+          });
+
+          if (response.ok) {
+            showToast("Invoice creada exitosamente", "success");
+            closeModal();
+            setTimeout(() => {
+              window.location.href = "/?page=invoices";
+            }, 1000);
+          } else {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Error desconocido" }));
+            console.error("Error creating invoice:", errorData);
+            showToast(
+              `Error: ${errorData.error || "Error al crear la invoice"}`,
+              "error"
+            );
+            if (btn && btnText && btnSpinner) {
+              btn.disabled = false;
+              btnText.textContent = "Guardar";
+              btnSpinner.classList.add("hidden");
+            }
+          }
+        } catch (error) {
+          console.error(error);
+          showToast("Error de conexión", "error");
+          if (btn && btnText && btnSpinner) {
+            btn.disabled = false;
+            btnText.textContent = "Guardar";
+            btnSpinner.classList.add("hidden");
+          }
+        }
+      };
+
       // Edit Category
       window.openEditCategoryModal = function (id, name, icon, budget) {
         showModal("edit-category");
@@ -1164,6 +1316,80 @@ const initialPage = session ? "dashboard-page" : "landing-page";
                     </div>
                 </form>
             `;
+        } else if (modalType === "add-debt") {
+          modalHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Nueva Deuda</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4" onsubmit="event.preventDefault(); createDebt()">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre / Descripción</label>
+                        <input type="text" id="debt-name" placeholder="Ej: Préstamo Banco" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto Total</label>
+                        <input type="number" id="debt-amount" placeholder="0.00" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha de Vencimiento</label>
+                        <input type="date" id="debt-due-date" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" id="btn-create-debt" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center">
+                            <span id="btn-text-create-debt">Guardar</span>
+                            <svg id="btn-spinner-create-debt" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
+                    </div>
+                </form>
+            `;
+        } else if (modalType === "add-invoice") {
+          modalHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Nueva Invoice</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form class="space-y-4" onsubmit="event.preventDefault(); createInvoice()">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cliente</label>
+                        <input type="text" id="invoice-client" placeholder="Nombre del Cliente" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto</label>
+                        <input type="number" id="invoice-amount" placeholder="0.00" step="0.01" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha de Emisión</label>
+                        <input type="date" id="invoice-issue-date" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha de Vencimiento</label>
+                        <input type="date" id="invoice-due-date" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" id="btn-create-invoice" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center">
+                            <span id="btn-text-create-invoice">Guardar</span>
+                            <svg id="btn-spinner-create-invoice" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium">Cancelar</button>
+                    </div>
+                </form>
+            `;
         } else if (modalType === "add-reminder") {
           modalHTML = `
                 <div class="flex items-center justify-between mb-4">
@@ -1269,6 +1495,8 @@ const initialPage = session ? "dashboard-page" : "landing-page";
           accounts: "accounts-page",
           transactions: "transactions-page",
           categories: "categories-page",
+          debts: "debts-page",
+          invoices: "invoices-page",
         };
 
         // If there's a page parameter and it's valid, show that page
