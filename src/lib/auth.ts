@@ -40,8 +40,23 @@ export const auth = betterAuth({
         ssl: { rejectUnauthorized: false }, // Neon requires SSL
     }),
     baseURL: "http://localhost:4321",
+    session: {
+        cookieCache: {
+            enabled: true,
+            maxAge: 60 * 60 * 24 * 7, // 7 days
+        },
+    },
+    advanced: {
+        cookiePrefix: "larico",
+        useSecureCookies: false, // Must be false for http://localhost
+        crossSubDomainCookies: {
+            enabled: false,
+        },
+    },
     plugins: [
-        admin()
+        admin({
+            adminRoles: ["admin"],
+        })
     ],
     user: {
         additionalFields: {

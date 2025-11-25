@@ -5,7 +5,7 @@ export const PATCH: APIRoute = async ({ params, request }) => {
     try {
         const session = await auth.api.getSession({ headers: request.headers });
 
-        if (!session?.user || (session.user as any).role !== 'superadmin') {
+        if (!session?.user || (session.user as any).role !== 'admin') {
             return new Response(JSON.stringify({ error: "Unauthorized" }), {
                 status: 403,
                 headers: { "Content-Type": "application/json" }

@@ -1,0 +1,5 @@
+// Add this temporarily to admin.astro to debug the session
+console.log('=== DEBUG SESSION ===');
+console.log('Session:', JSON.stringify(session, null, 2));
+console.log('User role:', (session.user as any).role);
+console.log('====================');

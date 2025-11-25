@@ -12,7 +12,7 @@ export const GET: APIRoute = async ({ request }) => {
             console.log("User role:", (session.user as any).role);
         }
 
-        if (!session?.user || (session.user as any).role !== 'superadmin') {
+        if (!session?.user || (session.user as any).role !== 'admin') {
             console.log("Unauthorized access attempt");
             return new Response(JSON.stringify({
                 error: "Unauthorized",

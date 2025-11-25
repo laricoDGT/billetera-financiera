@@ -1,0 +1,794 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { auth } from "../lib/auth";
+import { query } from "../lib/db";
+import { ensureCategories } from "../lib/categories";
+import Modal from "../components/Modal.astro";
+
+const session = await auth.api.getSession({
+    headers: Astro.request.headers,
+});
+
+if (!session) {
+    return Astro.redirect("/");
+}
+
+let categories = [];
+let activeCategories = [];
+const currentMonthName = new Intl.DateTimeFormat("es-ES", {
+    month: "long",
+}).format(new Date());
+const capitalizedMonth =
+    currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
+
+if (session) {
+    await ensureCategories(session.user.id);
+
+    const result = await query(
+        `SELECT 
+        c.*, 
+        COALESCE(SUM(t.amount), 0) as spent,
+        COUNT(t.id) as transaction_count
+     FROM financial_categories c
+     LEFT JOIN financial_transactions t ON t.category = c.name 
+        AND t.user_id = c.user_id 
+        AND t.date >= date_trunc('month', CURRENT_DATE)
+     WHERE c.user_id = $1
+     GROUP BY c.id
+     ORDER BY spent DESC`,
+        [session.user.id],
+    );
+    categories = result.rows;
+    activeCategories = categories.filter((c) => Number(c.spent) > 0);
+}
+
+// Helper to format currency
+const formatCurrency = (amount: number | string) => {
+    return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+    }).format(Number(amount));
+};
+
+// Helper to calculate percentage
+const calculatePercentage = (spent: number, budget: number) => {
+    if (!budget || budget === 0) return 0;
+    return Math.min(Math.round((Number(spent) / Number(budget)) * 100), 100);
+};
+---
+
+<Layout title="Categorías">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    Categorías
+                </h1>
+                <p class="text-gray-600 dark:text-gray-300 mt-1">
+                    Gestiona tus presupuestos y categorías de gastos
+                </p>
+            </div>
+            <button
+                onclick="openAddCategoryModal()"
+                class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+                <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span>Nueva Categoría</span>
+            </button>
+        </div>
+
+        <!-- Summary -->
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700 mb-6"
+        >
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Gastos por Categoría - {capitalizedMonth}
+            </h2>
+
+            {
+                activeCategories.length === 0 ? (
+                    categories.length === 0 ? (
+                        <div class="text-center py-8 text-gray-500">
+                            No tienes categorías configuradas. Crea una nueva
+                            para empezar.
+                        </div>
+                    ) : (
+                        <div class="text-center py-8 text-gray-500">
+                            No hay movimientos en este mes.
+                        </div>
+                    )
+                ) : (
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            {activeCategories
+                                .slice(
+                                    0,
+                                    Math.ceil(activeCategories.length / 2),
+                                )
+                                .map((category) => {
+                                    const percentage = calculatePercentage(
+                                        category.spent,
+                                        category.budget,
+                                    );
+                                    let colorClass = "bg-indigo-600";
+                                    if (percentage > 80)
+                                        colorClass = "bg-red-600";
+                                    else if (percentage > 50)
+                                        colorClass = "bg-orange-500";
+                                    else if (percentage > 25)
+                                        colorClass = "bg-blue-600";
+
+                                    return (
+                                        <div>
+                                            <div class="flex justify-between items-center mb-2">
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="text-2xl">
+                                                        {category.icon}
+                                                    </span>
+                                                    <span class="font-medium text-gray-900 dark:text-white">
+                                                        {category.name}
+                                                    </span>
+                                                </div>
+                                                <div class="flex items-center gap-3">
+                                                    <span class="font-bold text-gray-900 dark:text-white">
+                                                        {formatCurrency(
+                                                            category.spent,
+                                                        )}
+                                                    </span>
+                                                    <div class="flex gap-1">
+                                                        <button
+                                                            onclick={`openEditCategoryModal('${category.id}', '${category.name}', '${category.icon}', '${category.budget}')`}
+                                                            class="text-gray-400 hover:text-indigo-600 transition"
+                                                            title="Editar"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                class="h-4 w-4"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                            >
+                                                                <path
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                        <button
+                                                            onclick={`deleteCategory('${category.id}')`}
+                                                            class="text-gray-400 hover:text-red-600 transition"
+                                                            title="Eliminar"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                class="h-4 w-4"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                            >
+                                                                <path
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3">
+                                                <div
+                                                    class={`${colorClass} h-3 rounded-full`}
+                                                    style={`width: ${percentage}%`}
+                                                />
+                                            </div>
+                                            <div
+                                                class={`text-xs mt-1 ${percentage > 80 ? "text-red-500" : "text-gray-500 dark:text-gray-400"}`}
+                                            >
+                                                {percentage > 80 && "⚠️ "}
+                                                {percentage}% del presupuesto
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                        <div class="space-y-4">
+                            {activeCategories
+                                .slice(Math.ceil(activeCategories.length / 2))
+                                .map((category) => {
+                                    const percentage = calculatePercentage(
+                                        category.spent,
+                                        category.budget,
+                                    );
+                                    let colorClass = "bg-indigo-600";
+                                    if (percentage > 80)
+                                        colorClass = "bg-red-600";
+                                    else if (percentage > 50)
+                                        colorClass = "bg-orange-500";
+                                    else if (percentage > 25)
+                                        colorClass = "bg-blue-600";
+
+                                    return (
+                                        <div>
+                                            <div class="flex justify-between items-center mb-2">
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="text-2xl">
+                                                        {category.icon}
+                                                    </span>
+                                                    <span class="font-medium text-gray-900 dark:text-white">
+                                                        {category.name}
+                                                    </span>
+                                                </div>
+                                                <div class="flex items-center gap-3">
+                                                    <span class="font-bold text-gray-900 dark:text-white">
+                                                        {formatCurrency(
+                                                            category.spent,
+                                                        )}
+                                                    </span>
+                                                    <div class="flex gap-1">
+                                                        <button
+                                                            onclick={`openEditCategoryModal('${category.id}', '${category.name}', '${category.icon}', '${category.budget}')`}
+                                                            class="text-gray-400 hover:text-indigo-600 transition"
+                                                            title="Editar"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                class="h-4 w-4"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                            >
+                                                                <path
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                        <button
+                                                            onclick={`deleteCategory('${category.id}')`}
+                                                            class="text-gray-400 hover:text-red-600 transition"
+                                                            title="Eliminar"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                class="h-4 w-4"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                            >
+                                                                <path
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3">
+                                                <div
+                                                    class={`${colorClass} h-3 rounded-full`}
+                                                    style={`width: ${percentage}%`}
+                                                />
+                                            </div>
+                                            <div
+                                                class={`text-xs mt-1 ${percentage > 80 ? "text-red-500" : "text-gray-500 dark:text-gray-400"}`}
+                                            >
+                                                {percentage > 80 && "⚠️ "}
+                                                {percentage}% del presupuesto
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    </div>
+                )
+            }
+        </div>
+
+        <!-- Category Cards -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {
+                categories.map((category) => {
+                    const percentage = calculatePercentage(
+                        category.spent,
+                        category.budget,
+                    );
+                    let badgeClass =
+                        "bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600";
+                    if (percentage > 80)
+                        badgeClass =
+                            "bg-red-100 dark:bg-red-900/20 text-red-600";
+                    else if (percentage > 50)
+                        badgeClass =
+                            "bg-orange-100 dark:bg-orange-900/20 text-orange-600";
+                    else if (percentage > 25)
+                        badgeClass =
+                            "bg-blue-100 dark:bg-blue-900/20 text-blue-600";
+
+                    return (
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700 hover:shadow-lg transition">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-3xl">
+                                        {category.icon}
+                                    </span>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900 dark:text-white">
+                                            {category.name}
+                                        </h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                            {category.transaction_count}{" "}
+                                            transacciones
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button
+                                        onclick={`openEditCategoryModal('${category.id}', '${category.name}', '${category.icon}', '${category.budget}')`}
+                                        class="text-gray-400 hover:text-indigo-600 transition"
+                                        title="Editar"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-5 w-5"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                            />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onclick={`deleteCategory('${category.id}')`}
+                                        class="text-gray-400 hover:text-red-600 transition"
+                                        title="Eliminar"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-5 w-5"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-2xl font-bold text-gray-900 dark:text-white">
+                                        {formatCurrency(category.spent)}
+                                    </div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        de {formatCurrency(category.budget)}
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span
+                                        class={`text-xs px-2 py-1 rounded-full font-medium ${badgeClass}`}
+                                    >
+                                        {percentage}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })
+            }
+        </div>
+    </div>
+
+    <Modal />
+
+    <template id="add-category-template">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                Nueva Categoría
+            </h3>
+            <button
+                onclick="closeModal()"
+                class="text-gray-400 hover:text-gray-600"
+            >
+                <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form
+            class="space-y-4"
+            onsubmit="event.preventDefault(); createCategory()"
+        >
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Nombre</label
+                >
+                <input
+                    type="text"
+                    id="category-name"
+                    placeholder="Ej: Gimnasio"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    required
+                />
+            </div>
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Icono/Emoji</label
+                >
+                <input
+                    type="text"
+                    id="category-icon"
+                    placeholder="💪"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                />
+            </div>
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Presupuesto Mensual</label
+                >
+                <input
+                    type="number"
+                    id="category-budget"
+                    placeholder="0.00"
+                    step="0.01"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                />
+            </div>
+            <div class="flex gap-3 pt-4">
+                <button
+                    type="submit"
+                    id="btn-create-category"
+                    class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center"
+                >
+                    <span id="btn-text-create-category">Crear</span>
+                    <svg
+                        id="btn-spinner-create-category"
+                        class="hidden animate-spin ml-2 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"></circle>
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                </button>
+                <button
+                    type="button"
+                    onclick="closeModal()"
+                    class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium"
+                    >Cancelar</button
+                >
+            </div>
+        </form>
+    </template>
+
+    <template id="edit-category-template">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                Editar Categoría
+            </h3>
+            <button
+                onclick="closeModal()"
+                class="text-gray-400 hover:text-gray-600"
+            >
+                <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form
+            class="space-y-4"
+            onsubmit="event.preventDefault(); updateCategory()"
+        >
+            <input type="hidden" id="edit-category-id" />
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Nombre</label
+                >
+                <input
+                    type="text"
+                    id="edit-category-name"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    required
+                />
+            </div>
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Icono/Emoji</label
+                >
+                <input
+                    type="text"
+                    id="edit-category-icon"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                />
+            </div>
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Presupuesto Mensual</label
+                >
+                <input
+                    type="number"
+                    id="edit-category-budget"
+                    step="0.01"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                />
+            </div>
+            <div class="flex gap-3 pt-4">
+                <button
+                    type="submit"
+                    id="btn-update-category"
+                    class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center"
+                >
+                    <span id="btn-text-update-category">Actualizar</span>
+                    <svg
+                        id="btn-spinner-update-category"
+                        class="hidden animate-spin ml-2 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"></circle>
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                </button>
+                <button
+                    type="button"
+                    onclick="closeModal()"
+                    class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium"
+                    >Cancelar</button
+                >
+            </div>
+        </form>
+    </template>
+
+    <script>
+        import { authClient } from "../lib/auth-client";
+
+        window.openAddCategoryModal = function () {
+            const template = document.getElementById("add-category-template");
+            const content = document.getElementById("modal-content");
+            const overlay = document.getElementById("modal-overlay");
+
+            content.innerHTML = template.innerHTML;
+            overlay.classList.remove("hidden");
+        };
+
+        window.openEditCategoryModal = function (id, name, icon, budget) {
+            const template = document.getElementById("edit-category-template");
+            const content = document.getElementById("modal-content");
+            const overlay = document.getElementById("modal-overlay");
+
+            content.innerHTML = template.innerHTML;
+            overlay.classList.remove("hidden");
+
+            setTimeout(() => {
+                document.getElementById("edit-category-id").value = id;
+                document.getElementById("edit-category-name").value = name;
+                document.getElementById("edit-category-icon").value = icon;
+                document.getElementById("edit-category-budget").value = budget;
+            }, 0);
+        };
+
+        window.closeModal = function () {
+            const overlay = document.getElementById("modal-overlay");
+            overlay.classList.add("hidden");
+        };
+
+        window.createCategory = async function () {
+            const name = document.getElementById("category-name").value;
+            const icon = document.getElementById("category-icon").value;
+            const budget = document.getElementById("category-budget").value;
+
+            const btn = document.getElementById("btn-create-category");
+            const btnText = document.getElementById("btn-text-create-category");
+            const btnSpinner = document.getElementById(
+                "btn-spinner-create-category",
+            );
+
+            if (btn && btnText && btnSpinner) {
+                btn.disabled = true;
+                btnText.textContent = "Creando...";
+                btnSpinner.classList.remove("hidden");
+            }
+
+            try {
+                let headers = { "Content-Type": "application/json" };
+                const sessionData = await authClient.getSession();
+                if (sessionData?.data?.session?.token) {
+                    headers["Authorization"] =
+                        `Bearer ${sessionData.data.session.token}`;
+                }
+
+                const response = await fetch("/api/categories", {
+                    method: "POST",
+                    headers: headers,
+                    body: JSON.stringify({ name, icon, budget }),
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    alert(errorData.error || "Error al crear la categoría");
+                    if (btn && btnText && btnSpinner) {
+                        btn.disabled = false;
+                        btnText.textContent = "Crear";
+                        btnSpinner.classList.add("hidden");
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión");
+                if (btn && btnText && btnSpinner) {
+                    btn.disabled = false;
+                    btnText.textContent = "Crear";
+                    btnSpinner.classList.add("hidden");
+                }
+            }
+        };
+
+        window.updateCategory = async function () {
+            const id = document.getElementById("edit-category-id").value;
+            const name = document.getElementById("edit-category-name").value;
+            const icon = document.getElementById("edit-category-icon").value;
+            const budget = document.getElementById(
+                "edit-category-budget",
+            ).value;
+
+            const btn = document.getElementById("btn-update-category");
+            const btnText = document.getElementById("btn-text-update-category");
+            const btnSpinner = document.getElementById(
+                "btn-spinner-update-category",
+            );
+
+            if (btn && btnText && btnSpinner) {
+                btn.disabled = true;
+                btnText.textContent = "Actualizando...";
+                btnSpinner.classList.remove("hidden");
+            }
+
+            try {
+                let headers = { "Content-Type": "application/json" };
+                const sessionData = await authClient.getSession();
+                if (sessionData?.data?.session?.token) {
+                    headers["Authorization"] =
+                        `Bearer ${sessionData.data.session.token}`;
+                }
+
+                const response = await fetch(`/api/categories/${id}`, {
+                    method: "PUT",
+                    headers: headers,
+                    body: JSON.stringify({ name, icon, budget }),
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    alert(
+                        errorData.error || "Error al actualizar la categoría",
+                    );
+                    if (btn && btnText && btnSpinner) {
+                        btn.disabled = false;
+                        btnText.textContent = "Actualizar";
+                        btnSpinner.classList.add("hidden");
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión");
+                if (btn && btnText && btnSpinner) {
+                    btn.disabled = false;
+                    btnText.textContent = "Actualizar";
+                    btnSpinner.classList.add("hidden");
+                }
+            }
+        };
+
+        window.deleteCategory = async function (id) {
+            if (
+                !confirm("¿Estás seguro de que deseas eliminar esta categoría?")
+            ) {
+                return;
+            }
+
+            try {
+                let headers = { "Content-Type": "application/json" };
+                const sessionData = await authClient.getSession();
+                if (sessionData?.data?.session?.token) {
+                    headers["Authorization"] =
+                        `Bearer ${sessionData.data.session.token}`;
+                }
+
+                const response = await fetch(`/api/categories/${id}`, {
+                    method: "DELETE",
+                    headers: headers,
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    alert(errorData.error || "Error al eliminar la categoría");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión");
+            }
+        };
+    </script>
+</Layout>

@@ -1,0 +1,746 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { auth } from "../lib/auth";
+
+const session = await auth.api.getSession({
+    headers: Astro.request.headers,
+});
+
+if (!session) {
+    return Astro.redirect("/");
+}
+---
+
+<Layout title="Mi Perfil">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    Mi Perfil
+                </h1>
+                <p class="text-gray-600 dark:text-gray-300 mt-1">
+                    Gestiona tu información personal y seguridad
+                </p>
+            </div>
+        </div>
+
+        <!-- Profile Header -->
+        <div
+            id="profile-header"
+            class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-8 border border-gray-200 dark:border-slate-700 mb-6"
+        >
+            <div
+                class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6"
+            >
+                <div class="relative">
+                    <!-- User Avatar (Google profile picture or initials) -->
+                    <img
+                        id="profile-avatar-img"
+                        src=""
+                        alt="User Avatar"
+                        class="w-24 h-24 rounded-full border-4 border-indigo-500 object-cover hidden"
+                    />
+                    <div
+                        id="profile-avatar-placeholder"
+                        class="w-24 h-24 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-3xl font-bold text-white"
+                    >
+                        <span id="profile-initials">U</span>
+                    </div>
+                </div>
+                <div class="flex-1 text-center sm:text-left">
+                    <h2
+                        id="profile-display-name"
+                        class="text-2xl font-bold text-gray-900 dark:text-white"
+                    >
+                        Cargando...
+                    </h2>
+                    <p
+                        id="profile-display-email"
+                        class="text-gray-600 dark:text-gray-400"
+                    >
+                        -
+                    </p>
+                    <div
+                        class="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start"
+                    >
+                        <span
+                            id="profile-verified-badge"
+                            class="hidden px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-600 rounded-full text-sm font-medium"
+                            >✓ Verificado</span
+                        >
+                        <span
+                            id="profile-unverified-badge"
+                            class="hidden px-3 py-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 rounded-full text-sm font-medium"
+                            >⚠ Sin verificar</span
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div
+            id="profile-success-message"
+            class="hidden mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/40 text-green-800 dark:text-green-400 px-4 py-3 rounded-lg"
+        >
+            <p class="font-medium">✓ Cambios guardados exitosamente</p>
+        </div>
+        <div
+            id="profile-error-message"
+            class="hidden mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 text-red-800 dark:text-red-400 px-4 py-3 rounded-lg"
+        >
+            <p class="font-medium" id="profile-error-text">
+                Error al guardar cambios
+            </p>
+        </div>
+
+        <!-- Settings Sections -->
+        <div class="space-y-6">
+            <!-- Personal Information -->
+            <div
+                class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
+            >
+                <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
+                >
+                    Información Personal
+                </h3>
+                <form id="profile-info-form" class="space-y-4">
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                            >Nombre Completo</label
+                        >
+                        <input
+                            id="profile-name-input"
+                            type="text"
+                            placeholder="Tu nombre completo"
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                            >Email</label
+                        >
+                        <input
+                            id="profile-email-input"
+                            type="email"
+                            readonly
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white bg-gray-50 dark:bg-slate-800 cursor-not-allowed"
+                        />
+                        <p
+                            class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+                        >
+                            El email no se puede cambiar
+                        </p>
+                    </div>
+                    <button
+                        type="submit"
+                        id="save-profile-btn"
+                        class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >Guardar Cambios</button
+                    >
+                </form>
+            </div>
+
+            <!-- Security (Hidden for OAuth users without password) -->
+            <div
+                id="security-section"
+                class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
+            >
+                <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
+                >
+                    Seguridad
+                </h3>
+                <form id="change-password-form" class="space-y-4">
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                            >Contraseña Actual</label
+                        >
+                        <input
+                            id="current-password"
+                            type="password"
+                            placeholder="••••••••"
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                            >Nueva Contraseña</label
+                        >
+                        <input
+                            id="new-password"
+                            type="password"
+                            placeholder="••••••••"
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                            >Confirmar Nueva Contraseña</label
+                        >
+                        <input
+                            id="confirm-password"
+                            type="password"
+                            placeholder="••••••••"
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        id="change-password-btn"
+                        class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >Cambiar Contraseña</button
+                    >
+                </form>
+            </div>
+
+            <!-- Preferences -->
+            <div
+                class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
+            >
+                <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
+                >
+                    Preferencias
+                </h3>
+                <form id="preferences-form" class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4
+                                class="font-medium text-gray-900 dark:text-white"
+                            >
+                                Notificaciones por Email
+                            </h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Recibe actualizaciones en tu correo
+                            </p>
+                        </div>
+                        <label
+                            class="relative inline-flex items-center cursor-pointer"
+                        >
+                            <input
+                                id="pref-email-notifications"
+                                type="checkbox"
+                                checked
+                                class="sr-only peer"
+                            />
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
+                            >
+                            </div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4
+                                class="font-medium text-gray-900 dark:text-white"
+                            >
+                                Notificaciones Push
+                            </h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Alertas en tiempo real
+                            </p>
+                        </div>
+                        <label
+                            class="relative inline-flex items-center cursor-pointer"
+                        >
+                            <input
+                                id="pref-push-notifications"
+                                type="checkbox"
+                                checked
+                                class="sr-only peer"
+                            />
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
+                            >
+                            </div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4
+                                class="font-medium text-gray-900 dark:text-white"
+                            >
+                                Recordatorios Automáticos
+                            </h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Avisos de pagos próximos
+                            </p>
+                        </div>
+                        <label
+                            class="relative inline-flex items-center cursor-pointer"
+                        >
+                            <input
+                                id="pref-auto-reminders"
+                                type="checkbox"
+                                checked
+                                class="sr-only peer"
+                            />
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
+                            >
+                            </div>
+                        </label>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                            >Moneda Predeterminada</label
+                        >
+                        <select
+                            id="pref-currency"
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                        >
+                            <option value="USD">USD - Dólar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="PEN" selected>PEN - Sol</option>
+                            <option value="MXN">MXN - Peso Mexicano</option>
+                        </select>
+                    </div>
+                    <button
+                        type="submit"
+                        id="save-preferences-btn"
+                        class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
+                        >Guardar Preferencias</button
+                    >
+                </form>
+            </div>
+
+            <!-- Logout Section -->
+            <div
+                class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
+            >
+                <h3
+                    class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
+                >
+                    Sesión
+                </h3>
+                <button
+                    id="profile-logout-btn"
+                    class="w-full flex items-center justify-center space-x-2 bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition font-medium"
+                >
+                    <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        ></path>
+                    </svg>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </div>
+
+            <!-- Danger Zone -->
+            <div
+                class="bg-red-50 dark:bg-red-900/10 rounded-2xl shadow-sm p-6 border border-red-200 dark:border-red-900/20"
+            >
+                <h3
+                    class="text-lg font-semibold text-red-900 dark:text-red-400 mb-4"
+                >
+                    Zona de Peligro
+                </h3>
+                <div class="space-y-3">
+                    <button
+                        id="delete-account-btn"
+                        class="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition font-medium"
+                        >Eliminar Cuenta</button
+                    >
+                    <p class="text-sm text-red-700 dark:text-red-400">
+                        Esta acción es permanente y no se puede deshacer.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        import { authClient } from "../lib/auth-client";
+
+        // Helper function to get user initials
+        const getInitials = (name) => {
+            if (!name) return "U";
+            const names = name.trim().split(" ");
+            if (names.length >= 2) {
+                return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        };
+
+        // Show success message
+        const showSuccess = (message = "Cambios guardados exitosamente") => {
+            const successMsg = document.getElementById(
+                "profile-success-message",
+            );
+            const errorMsg = document.getElementById("profile-error-message");
+            if (errorMsg) errorMsg.classList.add("hidden");
+            if (successMsg) {
+                successMsg.classList.remove("hidden");
+                setTimeout(() => successMsg.classList.add("hidden"), 5000);
+            }
+        };
+
+        // Show error message
+        const showError = (message) => {
+            const successMsg = document.getElementById(
+                "profile-success-message",
+            );
+            const errorMsg = document.getElementById("profile-error-message");
+            const errorText = document.getElementById("profile-error-text");
+            if (successMsg) successMsg.classList.add("hidden");
+            if (errorMsg && errorText) {
+                errorText.textContent = message;
+                errorMsg.classList.remove("hidden");
+                setTimeout(() => errorMsg.classList.add("hidden"), 5000);
+            }
+        };
+
+        // Load user data from session
+        async function loadUserProfile() {
+            try {
+                const session = await authClient.getSession();
+
+                if (session?.data?.user) {
+                    const user = session.data.user;
+
+                    // Use name if available, otherwise use email
+                    const displayName = user.name || user.email || "Usuario";
+                    const initials = getInitials(displayName);
+
+                    // Update profile header
+                    const profileDisplayName = document.getElementById(
+                        "profile-display-name",
+                    );
+                    const profileDisplayEmail = document.getElementById(
+                        "profile-display-email",
+                    );
+                    const profileInitials =
+                        document.getElementById("profile-initials");
+                    const profileAvatarImg =
+                        document.getElementById("profile-avatar-img");
+                    const profileAvatarPlaceholder = document.getElementById(
+                        "profile-avatar-placeholder",
+                    );
+
+                    if (profileDisplayName) {
+                        profileDisplayName.textContent = displayName;
+                    }
+
+                    if (profileDisplayEmail) {
+                        profileDisplayEmail.textContent = user.email || "-";
+                    }
+
+                    if (profileInitials) {
+                        profileInitials.textContent = initials;
+                    }
+
+                    // Handle profile picture display
+                    if (
+                        user.image &&
+                        profileAvatarImg &&
+                        profileAvatarPlaceholder
+                    ) {
+                        // User has a profile picture (from Google OAuth), show it
+                        profileAvatarImg.src = user.image;
+                        profileAvatarImg.classList.remove("hidden");
+                        profileAvatarPlaceholder.classList.add("hidden");
+                    } else if (profileAvatarImg && profileAvatarPlaceholder) {
+                        // User has no profile picture (email/password login), show initials
+                        profileAvatarImg.classList.add("hidden");
+                        profileAvatarPlaceholder.classList.remove("hidden");
+                    }
+
+                    // Show verification badge
+                    const verifiedBadge = document.getElementById(
+                        "profile-verified-badge",
+                    );
+                    const unverifiedBadge = document.getElementById(
+                        "profile-unverified-badge",
+                    );
+                    if (user.emailVerified) {
+                        verifiedBadge?.classList.remove("hidden");
+                        unverifiedBadge?.classList.add("hidden");
+                    } else {
+                        verifiedBadge?.classList.add("hidden");
+                        unverifiedBadge?.classList.remove("hidden");
+                    }
+
+                    // Populate form fields
+                    const nameInput =
+                        document.getElementById("profile-name-input");
+                    const emailInput = document.getElementById(
+                        "profile-email-input",
+                    );
+
+                    if (nameInput) {
+                        nameInput.value = user.name || "";
+                    }
+
+                    if (emailInput) {
+                        emailInput.value = user.email || "";
+                    }
+
+                    // Hide Security section if user doesn't have a password (OAuth login)
+                    const securitySection =
+                        document.getElementById("security-section");
+                    if (securitySection) {
+                        if (
+                            user.image &&
+                            user.image.includes("googleusercontent.com")
+                        ) {
+                            securitySection.classList.add("hidden");
+                        }
+                    }
+
+                    // Load preferences from localStorage
+                    loadPreferences();
+                }
+            } catch (error) {
+                console.error("Error loading user profile:", error);
+                showError("Error al cargar el perfil");
+            }
+        }
+
+        // Load preferences from localStorage
+        function loadPreferences() {
+            const preferences = JSON.parse(
+                localStorage.getItem("userPreferences") || "{}",
+            );
+
+            const emailNotif = document.getElementById(
+                "pref-email-notifications",
+            );
+            const pushNotif = document.getElementById(
+                "pref-push-notifications",
+            );
+            const autoReminders = document.getElementById(
+                "pref-auto-reminders",
+            );
+            const currency = document.getElementById("pref-currency");
+
+            if (emailNotif)
+                emailNotif.checked = preferences.emailNotifications ?? true;
+            if (pushNotif)
+                pushNotif.checked = preferences.pushNotifications ?? true;
+            if (autoReminders)
+                autoReminders.checked = preferences.autoReminders ?? true;
+            if (currency) currency.value = preferences.currency || "PEN";
+        }
+
+        // Handle profile info form submission
+        const profileInfoForm = document.getElementById("profile-info-form");
+        if (profileInfoForm) {
+            profileInfoForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const nameInput = document.getElementById("profile-name-input");
+                const saveBtn = document.getElementById("save-profile-btn");
+
+                if (!nameInput) return;
+
+                try {
+                    saveBtn.disabled = true;
+                    saveBtn.textContent = "Guardando...";
+
+                    // Update user profile via Better Auth native method
+                    const { data, error } = await authClient.updateUser({
+                        name: nameInput.value,
+                    });
+
+                    if (error) {
+                        throw new Error(
+                            error.message || "Error al actualizar el perfil",
+                        );
+                    }
+
+                    showSuccess("Información actualizada exitosamente");
+                    // Reload user data to reflect changes
+                    await loadUserProfile();
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                    showError(
+                        error.message || "Error al actualizar la información",
+                    );
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = "Guardar Cambios";
+                }
+            });
+        }
+
+        // Handle password change form submission
+        const changePasswordForm = document.getElementById(
+            "change-password-form",
+        );
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const currentPassword =
+                    document.getElementById("current-password")?.value;
+                const newPassword =
+                    document.getElementById("new-password")?.value;
+                const confirmPassword =
+                    document.getElementById("confirm-password")?.value;
+                const changeBtn = document.getElementById(
+                    "change-password-btn",
+                );
+
+                // Validation
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    showError("Por favor completa todos los campos");
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    showError("Las contraseñas no coinciden");
+                    return;
+                }
+
+                if (newPassword.length < 8) {
+                    showError(
+                        "La nueva contraseña debe tener al menos 8 caracteres",
+                    );
+                    return;
+                }
+
+                try {
+                    changeBtn.disabled = true;
+                    changeBtn.textContent = "Cambiando...";
+
+                    // Use Better Auth native method for password change
+                    const { data, error } = await authClient.changePassword({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword,
+                        revokeOtherSessions: false,
+                    });
+
+                    if (error) {
+                        throw new Error(
+                            error.message || "Error al cambiar la contraseña",
+                        );
+                    }
+
+                    showSuccess("Contraseña cambiada exitosamente");
+                    // Clear form
+                    document.getElementById("current-password").value = "";
+                    document.getElementById("new-password").value = "";
+                    document.getElementById("confirm-password").value = "";
+                } catch (error) {
+                    console.error("Error changing password:", error);
+                    showError(
+                        error.message || "Error al cambiar la contraseña",
+                    );
+                } finally {
+                    changeBtn.disabled = false;
+                    changeBtn.textContent = "Cambiar Contraseña";
+                }
+            });
+        }
+
+        // Handle preferences form submission
+        const preferencesForm = document.getElementById("preferences-form");
+        if (preferencesForm) {
+            preferencesForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const emailNotif = document.getElementById(
+                    "pref-email-notifications",
+                )?.checked;
+                const pushNotif = document.getElementById(
+                    "pref-push-notifications",
+                )?.checked;
+                const autoReminders = document.getElementById(
+                    "pref-auto-reminders",
+                )?.checked;
+                const currency =
+                    document.getElementById("pref-currency")?.value;
+
+                const preferences = {
+                    emailNotifications: emailNotif,
+                    pushNotifications: pushNotif,
+                    autoReminders: autoReminders,
+                    currency: currency,
+                };
+
+                // Save to localStorage
+                localStorage.setItem(
+                    "userPreferences",
+                    JSON.stringify(preferences),
+                );
+                showSuccess("Preferencias guardadas exitosamente");
+            });
+        }
+
+        // Handle profile logout button
+        const profileLogoutBtn = document.getElementById("profile-logout-btn");
+        if (profileLogoutBtn) {
+            profileLogoutBtn.addEventListener("click", async () => {
+                try {
+                    // Call better-auth signOut which deletes cookies
+                    await authClient.signOut({
+                        fetchOptions: {
+                            onSuccess: () => {
+                                localStorage.clear();
+                                sessionStorage.clear();
+                                // Force full page reload to /
+                                window.location.href = "/";
+                            },
+                            onError: (ctx) => {
+                                console.error("Logout error:", ctx.error);
+                                // Even on error, clear storage and redirect
+                                localStorage.clear();
+                                sessionStorage.clear();
+                                window.location.href = "/";
+                            },
+                        },
+                    });
+                } catch (error) {
+                    console.error("Logout exception:", error);
+                    // Fallback: clear storage and redirect
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = "/";
+                }
+            });
+        }
+
+        // Handle delete account button
+        const deleteAccountBtn = document.getElementById("delete-account-btn");
+        if (deleteAccountBtn) {
+            deleteAccountBtn.addEventListener("click", () => {
+                const confirmed = confirm(
+                    "⚠️ ¿Estás seguro de que deseas eliminar tu cuenta?\n\nEsta acción es permanente y no se puede deshacer. Se eliminarán todos tus datos.",
+                );
+
+                if (confirmed) {
+                    const doubleConfirm = confirm(
+                        "⚠️ ÚLTIMA CONFIRMACIÓN\n\n¿Realmente deseas eliminar tu cuenta de forma permanente?",
+                    );
+
+                    if (doubleConfirm) {
+                        // TODO: Implement account deletion API call
+                        alert(
+                            "Funcionalidad de eliminación de cuenta en desarrollo",
+                        );
+                    }
+                }
+            });
+        }
+
+        // Load user profile when profile page is shown
+        loadUserProfile();
+    </script>
+</Layout>

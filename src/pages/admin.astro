@@ -1,0 +1,416 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { auth } from "../lib/auth";
+
+const session = await auth.api.getSession({
+    headers: Astro.request.headers,
+});
+
+if (!session || (session.user as any).role !== "admin") {
+    return Astro.redirect("/");
+}
+---
+
+<Layout title="Panel de Administración">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Panel de Administración
+            </h1>
+            <p class="text-gray-600 dark:text-gray-300 mt-1">
+                Vista general del sistema
+            </p>
+        </div>
+
+        <!-- Admin Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div
+                class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-slate-700"
+            >
+                <div class="flex items-center justify-between mb-4">
+                    <div
+                        class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center"
+                    >
+                        <svg
+                            class="w-6 h-6 text-blue-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                            ></path>
+                        </svg>
+                    </div>
+                </div>
+                <div
+                    class="text-2xl font-bold text-gray-900 dark:text-white mb-1"
+                    id="total-users-count"
+                >
+                    -
+                </div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    Usuarios Totales
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700"
+        >
+            <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+                <div
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0"
+                >
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                        Usuarios
+                    </h2>
+                    <div class="flex space-x-2">
+                        <input
+                            type="text"
+                            id="admin-search-input"
+                            placeholder="Buscar usuario..."
+                            class="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <button
+                            onclick="fetchUsers(1)"
+                            class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+                        >
+                            <svg
+                                class="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                ></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-slate-700">
+                        <tr>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                            >
+                                Usuario</th
+                            >
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                            >
+                                Email</th
+                            >
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                            >
+                                Rol</th
+                            >
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                            >
+                                Estado</th
+                            >
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                            >
+                                Registro</th
+                            >
+                            <th
+                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                            >
+                                Acciones</th
+                            >
+                        </tr>
+                    </thead>
+                    <tbody
+                        id="admin-users-table-body"
+                        class="divide-y divide-gray-200 dark:divide-slate-700"
+                    >
+                        <!-- Rows will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div
+                class="px-6 py-4 border-t border-gray-200 dark:border-slate-700 flex items-center justify-between"
+            >
+                <div
+                    class="text-sm text-gray-500 dark:text-gray-400"
+                    id="admin-pagination-info"
+                >
+                    Mostrando <span class="font-medium">0</span> de <span
+                        class="font-medium">0</span
+                    > usuarios
+                </div>
+                <div class="flex space-x-2" id="admin-pagination-controls">
+                    <!-- Pagination buttons will be populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        import { authClient } from "../lib/auth-client";
+
+        let currentAdminPage = 1;
+        const adminLimit = 10;
+
+        // Toast Notifications Helper (since it was in index.astro)
+        function showToast(message, type = "info") {
+            // Check if toast container exists, if not create it
+            let container = document.getElementById("toast-container");
+            if (!container) {
+                container = document.createElement("div");
+                container.id = "toast-container";
+                container.className =
+                    "fixed bottom-4 right-4 z-50 flex flex-col space-y-2";
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement("div");
+            const colors = {
+                success: "bg-green-500",
+                error: "bg-red-500",
+                warning: "bg-orange-500",
+                info: "bg-indigo-500",
+            };
+
+            toast.className = `${colors[type] || colors.info} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-y-10 opacity-0 flex items-center`;
+            toast.innerHTML = `
+            <span class="font-medium">${message}</span>
+            <button onclick="this.parentElement.remove()" class="ml-4 hover:text-gray-200">✕</button>
+        `;
+
+            container.appendChild(toast);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove("translate-y-10", "opacity-0");
+            });
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add("translate-y-10", "opacity-0");
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        window.showToast = showToast;
+
+        window.fetchUsers = async function (page = 1) {
+            currentAdminPage = page;
+            const searchInput = document.getElementById("admin-search-input");
+            const search = searchInput ? searchInput.value : "";
+
+            try {
+                const query = {
+                    limit: adminLimit,
+                    offset: (page - 1) * adminLimit,
+                    sortBy: "createdAt",
+                    sortDirection: "desc",
+                };
+
+                if (search) {
+                    query.searchValue = search;
+                    query.searchField = "email";
+                }
+
+                const { data, error } = await authClient.admin.listUsers({
+                    query,
+                });
+
+                if (error) {
+                    if (error.status === 403) {
+                        console.error("Auth Error:", error);
+                        showToast(
+                            "No tienes permisos de administrador: " +
+                                error.message,
+                            "error",
+                        );
+                        return;
+                    }
+                    throw error;
+                }
+
+                if (data) {
+                    renderUsersTable(data.users);
+                    renderPagination(data.total || data.users.length);
+
+                    const totalCountEl =
+                        document.getElementById("total-users-count");
+                    if (totalCountEl) {
+                        totalCountEl.textContent = (
+                            data.total || data.users.length
+                        ).toString();
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                showToast("Error al cargar usuarios", "error");
+            }
+        };
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById("admin-users-table-body");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (users.length === 0) {
+                tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    No se encontraron usuarios.
+                </td>
+            </tr>
+        `;
+                return;
+            }
+
+            users.forEach((user) => {
+                const initials = user.name
+                    ? user.name.substring(0, 2).toUpperCase()
+                    : user.email.substring(0, 2).toUpperCase();
+                const statusColor = user.banned
+                    ? "bg-red-100 text-red-600 dark:bg-red-900/20"
+                    : "bg-green-100 text-green-600 dark:bg-green-900/20";
+                const statusText = user.banned ? "Bloqueado" : "Activo";
+
+                const tr = document.createElement("tr");
+                tr.className =
+                    "hover:bg-gray-50 dark:hover:bg-slate-700 transition";
+                tr.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center">
+            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+              ${initials}
+            </div>
+            <div class="ml-4">
+              <div class="text-sm font-medium text-gray-900 dark:text-white">
+                ${user.name || "Sin nombre"}
+              </div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">
+                ${user.id.substring(0, 8)}...
+              </div>
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+          ${user.email}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+          <select onchange="changeRole('${user.id}', this.value)" class="bg-transparent border-none focus:ring-0 cursor-pointer">
+            <option value="user" ${user.role === "user" ? "selected" : ""}>Usuario</option>
+            <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+          </select>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="px-2 py-1 text-xs font-medium ${statusColor} rounded-full">
+            ${statusText}
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+          ${new Date(user.createdAt).toLocaleDateString()}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+          <button onclick="toggleStatus('${user.id}', ${user.banned})" class="${user.banned ? "text-green-600 hover:text-green-900" : "text-red-600 hover:text-red-900"}">
+            ${user.banned ? "Activar" : "Bloquear"}
+          </button>
+        </td>
+      `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderPagination(total) {
+            const totalPages = Math.ceil(total / adminLimit);
+            const start = (currentAdminPage - 1) * adminLimit + 1;
+            const end = Math.min(currentAdminPage * adminLimit, total);
+
+            const infoEl = document.getElementById("admin-pagination-info");
+            if (infoEl) {
+                infoEl.innerHTML = `
+            Mostrando <span class="font-medium">${total > 0 ? start : 0}-${end}</span> de <span class="font-medium">${total}</span> usuarios
+        `;
+            }
+
+            const controls = document.getElementById(
+                "admin-pagination-controls",
+            );
+            if (!controls) return;
+            controls.innerHTML = "";
+
+            if (totalPages <= 1) return;
+
+            // Previous
+            const prevBtn = document.createElement("button");
+            prevBtn.className =
+                "px-3 py-1 border border-gray-300 dark:border-slate-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50";
+            prevBtn.textContent = "Anterior";
+            prevBtn.disabled = currentAdminPage === 1;
+            prevBtn.onclick = () => fetchUsers(currentAdminPage - 1);
+            controls.appendChild(prevBtn);
+
+            // Next
+            const nextBtn = document.createElement("button");
+            nextBtn.className =
+                "px-3 py-1 border border-gray-300 dark:border-slate-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50";
+            nextBtn.textContent = "Siguiente";
+            nextBtn.disabled = currentAdminPage === totalPages;
+            nextBtn.onclick = () => fetchUsers(currentAdminPage + 1);
+            controls.appendChild(nextBtn);
+        }
+
+        window.changeRole = async function (userId, newRole) {
+            try {
+                const { error } = await authClient.admin.setRole({
+                    userId,
+                    role: newRole,
+                });
+
+                if (error) throw error;
+
+                showToast("Rol actualizado correctamente", "success");
+                fetchUsers(currentAdminPage); // Refresh
+            } catch (error) {
+                console.error(error);
+                showToast("Error al actualizar rol", "error");
+            }
+        };
+
+        window.toggleStatus = async function (userId, isBanned) {
+            try {
+                let error;
+                if (isBanned) {
+                    const res = await authClient.admin.unbanUser({ userId });
+                    error = res.error;
+                } else {
+                    const res = await authClient.admin.banUser({ userId });
+                    error = res.error;
+                }
+
+                if (error) throw error;
+
+                showToast(
+                    `Usuario ${!isBanned ? "bloqueado" : "activado"} correctamente`,
+                    "success",
+                );
+                fetchUsers(currentAdminPage); // Refresh
+            } catch (error) {
+                console.error(error);
+                showToast("Error al actualizar estado", "error");
+            }
+        };
+
+        // Initial load
+        fetchUsers();
+    </script>
+</Layout>

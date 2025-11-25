@@ -1,0 +1,570 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { auth } from "../lib/auth";
+import { query } from "../lib/db";
+import Modal from "../components/Modal.astro";
+
+const session = await auth.api.getSession({
+    headers: Astro.request.headers,
+});
+
+if (!session) {
+    return Astro.redirect("/");
+}
+
+let transactions = [];
+let categories = [];
+let accounts = [];
+
+if (session) {
+    const result = await query(
+        `SELECT t.*, a.name as account_name, c.icon as category_icon
+         FROM financial_transactions t
+         LEFT JOIN financial_accounts a ON t.account_id = a.id
+         LEFT JOIN financial_categories c ON t.category = c.name AND t.user_id = c.user_id
+         WHERE t.user_id = $1 
+         ORDER BY t.date DESC`,
+        [session.user.id],
+    );
+    transactions = result.rows;
+
+    const categoriesResult = await query(
+        `SELECT name FROM financial_categories WHERE user_id = $1 ORDER BY name ASC`,
+        [session.user.id],
+    );
+    categories = categoriesResult.rows;
+
+    const accountsResult = await query(
+        "SELECT id, name, currency, balance FROM financial_accounts WHERE user_id = $1",
+        [session.user.id],
+    );
+    accounts = accountsResult.rows;
+}
+
+// Helper to group transactions by date
+const groupTransactionsByDate = (transactions: any[]) => {
+    const groups: Record<string, any[]> = {};
+
+    transactions.forEach((transaction) => {
+        const date = new Date(transaction.date);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        let key = date.toLocaleDateString("es-ES", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
+
+        // Check for Today and Yesterday
+        if (date.toDateString() === today.toDateString()) {
+            key = "HOY";
+        } else if (date.toDateString() === yesterday.toDateString()) {
+            key = "AYER";
+        } else {
+            // Capitalize first letter
+            key = key.charAt(0).toUpperCase() + key.slice(1);
+        }
+
+        if (!groups[key]) {
+            groups[key] = [];
+        }
+        groups[key].push(transaction);
+    });
+
+    return groups;
+};
+
+const groupedTransactions = groupTransactionsByDate(transactions);
+
+// Helper to format currency
+const formatCurrency = (amount: number | string) => {
+    return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+    }).format(Number(amount));
+};
+
+// Helper to format time
+const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(date);
+};
+---
+
+<Layout title="Transacciones">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    Transacciones
+                </h1>
+                <p class="text-gray-600 dark:text-gray-300 mt-1">
+                    Historial de movimientos
+                </p>
+            </div>
+            <button
+                onclick="openAddTransactionModal()"
+                class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+                <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span>Nueva Transacción</span>
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-4 mb-6 border border-gray-200 dark:border-slate-700 flex flex-wrap gap-4"
+        >
+            <div class="flex-1 min-w-[200px]">
+                <label
+                    class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1"
+                    >Buscar</label
+                >
+                <div class="relative">
+                    <input
+                        type="text"
+                        placeholder="Buscar por descripción..."
+                        class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 text-sm"
+                    />
+                    <svg
+                        class="w-5 h-5 text-gray-400 absolute left-3 top-2.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        ></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="w-full sm:w-auto">
+                <label
+                    class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1"
+                    >Categoría</label
+                >
+                <select
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 text-sm"
+                >
+                    <option>Todas</option>
+                    {
+                        categories.map((cat) => (
+                            <option value={cat.name}>{cat.name}</option>
+                        ))
+                    }
+                </select>
+            </div>
+            <div class="w-full sm:w-auto">
+                <label
+                    class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1"
+                    >Tipo</label
+                >
+                <select
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 text-sm"
+                >
+                    <option>Todos</option>
+                    <option>Ingresos</option>
+                    <option>Gastos</option>
+                </select>
+            </div>
+            <div class="w-full sm:w-auto">
+                <label
+                    class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1"
+                    >Período</label
+                >
+                <select
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 text-sm"
+                >
+                    <option>Este mes</option>
+                    <option>Mes pasado</option>
+                    <option>Últimos 3 meses</option>
+                    <option>Este año</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Transactions List -->
+        <div class="space-y-4">
+            {
+                transactions.length === 0 ? (
+                    <div class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700">
+                        No hay transacciones registradas.
+                    </div>
+                ) : (
+                    Object.entries(groupedTransactions).map(
+                        ([dateGroup, groupTransactions]) => (
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase pl-1">
+                                    {dateGroup}
+                                </h3>
+                                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 divide-y divide-gray-200 dark:divide-slate-700 overflow-hidden">
+                                    {groupTransactions.map((transaction) => (
+                                        <div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition group">
+                                            <div class="flex items-center space-x-4">
+                                                <div
+                                                    class={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+                                                        transaction.type ===
+                                                        "Ingreso"
+                                                            ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                                                            : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                                                    }`}
+                                                >
+                                                    {transaction.category_icon ||
+                                                        "📝"}
+                                                </div>
+                                                <div>
+                                                    <div class="font-bold text-gray-900 dark:text-white text-sm">
+                                                        {transaction.description ||
+                                                            transaction.category}
+                                                    </div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                                        <span>
+                                                            {formatTime(
+                                                                transaction.date,
+                                                            )}
+                                                        </span>
+                                                        <span>•</span>
+                                                        <span class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300">
+                                                            {
+                                                                transaction.category
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div
+                                                    class={`font-bold text-sm ${
+                                                        transaction.type ===
+                                                        "Ingreso"
+                                                            ? "text-green-600 dark:text-green-400"
+                                                            : "text-red-600 dark:text-red-400"
+                                                    }`}
+                                                >
+                                                    {transaction.type ===
+                                                    "Ingreso"
+                                                        ? "+"
+                                                        : "-"}
+                                                    {formatCurrency(
+                                                        transaction.amount,
+                                                    )}
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                    {transaction.account_name ||
+                                                        "Cuenta eliminada"}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ),
+                    )
+                )
+            }
+        </div>
+
+        {
+            transactions.length > 0 && (
+                <div class="mt-8 text-center">
+                    <button class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium text-sm">
+                        Cargar más transacciones
+                    </button>
+                </div>
+            )
+        }
+    </div>
+
+    <Modal />
+
+    <template id="add-transaction-template">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                Nueva Transacción
+            </h3>
+            <button
+                onclick="closeModal()"
+                class="text-gray-400 hover:text-gray-600"
+            >
+                <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form
+            class="space-y-4"
+            onsubmit="event.preventDefault(); createTransaction()"
+        >
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Tipo</label
+                >
+                <select
+                    id="transaction-type"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                >
+                    <option value="Gasto">Gasto</option>
+                    <option value="Ingreso">Ingreso</option>
+                </select>
+            </div>
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Cuenta</label
+                >
+                <select
+                    id="transaction-account"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    required
+                >
+                    <option value="" disabled selected
+                        >Cargando cuentas...</option
+                    >
+                </select>
+            </div>
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Monto</label
+                >
+                <input
+                    type="number"
+                    id="transaction-amount"
+                    placeholder="0.00"
+                    step="0.01"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    required
+                />
+            </div>
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Categoría</label
+                >
+                <input
+                    list="category-list"
+                    id="transaction-category"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Selecciona o escribe..."
+                    required
+                    autocomplete="off"
+                />
+                <datalist id="category-list">
+                    {categories.map((cat) => <option value={cat.name} />)}
+                </datalist>
+            </div>
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Descripción</label
+                >
+                <input
+                    type="text"
+                    id="transaction-description"
+                    placeholder="Ej: Compra en supermercado"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                />
+            </div>
+            <div class="flex gap-3 pt-4">
+                <button
+                    type="submit"
+                    id="btn-create-transaction"
+                    class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium flex justify-center items-center"
+                >
+                    <span id="btn-text-create-transaction">Guardar</span>
+                    <svg
+                        id="btn-spinner-create-transaction"
+                        class="hidden animate-spin ml-2 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"></circle>
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                </button>
+                <button
+                    type="button"
+                    onclick="closeModal()"
+                    class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium"
+                    >Cancelar</button
+                >
+            </div>
+        </form>
+    </template>
+
+    <script>
+        import { authClient } from "../lib/auth-client";
+
+        window.openAddTransactionModal = function () {
+            const template = document.getElementById(
+                "add-transaction-template",
+            );
+            const content = document.getElementById("modal-content");
+            const overlay = document.getElementById("modal-overlay");
+
+            content.innerHTML = template.innerHTML;
+            overlay.classList.remove("hidden");
+
+            // Load accounts into select
+            loadAccountsForSelect();
+        };
+
+        window.closeModal = function () {
+            const overlay = document.getElementById("modal-overlay");
+            overlay.classList.add("hidden");
+        };
+
+        async function loadAccountsForSelect() {
+            try {
+                let headers = { "Content-Type": "application/json" };
+                const sessionData = await authClient.getSession();
+                if (sessionData?.data?.session?.token) {
+                    headers["Authorization"] =
+                        `Bearer ${sessionData.data.session.token}`;
+                }
+
+                const response = await fetch("/api/accounts", { headers });
+                if (response.ok) {
+                    const accounts = await response.json();
+                    const select = document.getElementById(
+                        "transaction-account",
+                    );
+                    if (select) {
+                        if (accounts.length === 0) {
+                            select.innerHTML =
+                                '<option value="" disabled selected>No tienes cuentas. Crea una primero.</option>';
+                        } else {
+                            select.innerHTML =
+                                '<option value="" disabled selected>Selecciona una cuenta</option>' +
+                                accounts
+                                    .map(
+                                        (acc) =>
+                                            `<option value="${acc.id}">${acc.name} (${acc.currency} ${acc.balance})</option>`,
+                                    )
+                                    .join("");
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error fetching accounts", e);
+            }
+        }
+
+        window.createTransaction = async function () {
+            const type = document.getElementById("transaction-type").value;
+            const accountId = document.getElementById(
+                "transaction-account",
+            ).value;
+            const amount = document.getElementById("transaction-amount").value;
+            const category = document.getElementById(
+                "transaction-category",
+            ).value;
+            const description = document.getElementById(
+                "transaction-description",
+            ).value;
+
+            if (!accountId) {
+                alert("Por favor selecciona una cuenta");
+                return;
+            }
+
+            const btn = document.getElementById("btn-create-transaction");
+            const btnText = document.getElementById(
+                "btn-text-create-transaction",
+            );
+            const btnSpinner = document.getElementById(
+                "btn-spinner-create-transaction",
+            );
+
+            if (btn && btnText && btnSpinner) {
+                btn.disabled = true;
+                btnText.textContent = "Guardando...";
+                btnSpinner.classList.remove("hidden");
+            }
+
+            try {
+                let headers = { "Content-Type": "application/json" };
+                const sessionData = await authClient.getSession();
+                if (sessionData?.data?.session?.token) {
+                    headers["Authorization"] =
+                        `Bearer ${sessionData.data.session.token}`;
+                }
+
+                const response = await fetch("/api/transactions", {
+                    method: "POST",
+                    headers: headers,
+                    body: JSON.stringify({
+                        type,
+                        account_id: accountId,
+                        amount,
+                        category,
+                        description,
+                        date: new Date().toISOString(),
+                    }),
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    alert(errorData.error || "Error al crear la transacción");
+                    if (btn && btnText && btnSpinner) {
+                        btn.disabled = false;
+                        btnText.textContent = "Guardar";
+                        btnSpinner.classList.add("hidden");
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión");
+                if (btn && btnText && btnSpinner) {
+                    btn.disabled = false;
+                    btnText.textContent = "Guardar";
+                    btnSpinner.classList.add("hidden");
+                }
+            }
+        };
+    </script>
+</Layout>
