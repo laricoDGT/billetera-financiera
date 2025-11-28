@@ -144,11 +144,13 @@ export const PUT: APIRoute = async ({ request, url }) => {
 };
 
 export const DELETE: APIRoute = async ({ request, url }) => {
+  console.log("DELETE /api/invoices request received");
   const session = await auth.api.getSession({
     headers: request.headers,
   });
 
   if (!session) {
+    console.log("DELETE /api/invoices: No session");
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
     });
@@ -156,6 +158,7 @@ export const DELETE: APIRoute = async ({ request, url }) => {
 
   try {
     const id = url.searchParams.get("id");
+    console.log(`DELETE /api/invoices: Attempting to delete invoice ${id} for user ${session.user.id}`);
 
     if (!id) {
       return new Response(JSON.stringify({ error: "ID is required" }), {
@@ -168,7 +171,18 @@ export const DELETE: APIRoute = async ({ request, url }) => {
       [id, session.user.id]
     );
 
+    console.log(`DELETE /api/invoices: Deleted ${result.rowCount} rows`);
+
     if (result.rowCount === 0) {
+      // Check if invoice exists at all to give better error
+      const check = await query("SELECT id FROM financial_invoices WHERE id = $1", [id]);
+      if (check.rows.length > 0) {
+        console.log("DELETE /api/invoices: Invoice exists but belongs to another user");
+        return new Response(JSON.stringify({ error: "Invoice not found (permission denied)" }), {
+          status: 404,
+        });
+      }
+      console.log("DELETE /api/invoices: Invoice not found");
       return new Response(JSON.stringify({ error: "Invoice not found" }), {
         status: 404,
       });
