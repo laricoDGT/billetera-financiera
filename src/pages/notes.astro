@@ -1,0 +1,557 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { auth } from "../lib/auth";
+import { query } from "../lib/db";
+
+const session = await auth.api.getSession({
+    headers: Astro.request.headers,
+});
+
+if (!session) {
+    return Astro.redirect("/login");
+}
+
+// Get query params
+const url = new URL(Astro.request.url);
+const page = parseInt(url.searchParams.get("page") || "1");
+const search = url.searchParams.get("search") || "";
+const category = url.searchParams.get("category") || "";
+const limit = 9;
+const offset = (page - 1) * limit;
+
+// Build query
+let queryText = "SELECT * FROM notes WHERE user_id = $1";
+let countQueryText = "SELECT COUNT(*) FROM notes WHERE user_id = $1";
+const params: any[] = [session.user.id];
+let paramIndex = 2;
+
+if (search) {
+    queryText += ` AND (title ILIKE $${paramIndex} OR content ILIKE $${paramIndex})`;
+    countQueryText += ` AND (title ILIKE $${paramIndex} OR content ILIKE $${paramIndex})`;
+    params.push(`%${search}%`);
+    paramIndex++;
+}
+
+if (category) {
+    queryText += ` AND category = $${paramIndex}`;
+    countQueryText += ` AND category = $${paramIndex}`;
+    params.push(category);
+    paramIndex++;
+}
+
+// Get total count for pagination
+let totalNotes = 0;
+try {
+    const countResult = await query(countQueryText, params);
+    totalNotes = parseInt(countResult.rows[0].count);
+} catch (e) {
+    console.error("Error counting notes:", e);
+}
+
+const totalPages = Math.ceil(totalNotes / limit);
+
+// Add pagination to query
+queryText += ` ORDER BY created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+params.push(limit, offset);
+
+let notes = [];
+let categories = [];
+
+try {
+    const result = await query(queryText, params);
+    notes = result.rows;
+
+    // Get unique categories for filter
+    const catResult = await query(
+        "SELECT DISTINCT category FROM notes WHERE user_id = $1 AND category IS NOT NULL ORDER BY category",
+        [session.user.id],
+    );
+    categories = catResult.rows.map((r) => r.category);
+} catch (e) {
+    console.error("Error loading notes:", e);
+}
+---
+
+<Layout title="Notas">
+    <div class="max-w-6xl mx-auto space-y-6">
+        <div
+            class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+        >
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                Mis Notas
+            </h1>
+            <button
+                id="new-note-btn"
+                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center space-x-2"
+            >
+                <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span>Nueva Nota</span>
+            </button>
+        </div>
+
+        <!-- Filters & Search -->
+        <div
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4"
+        >
+            <form method="GET" class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1 relative">
+                    <div
+                        class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                    >
+                        <svg
+                            class="h-5 w-5 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            ></path>
+                        </svg>
+                    </div>
+                    <input
+                        type="text"
+                        name="search"
+                        value={search}
+                        placeholder="Buscar notas..."
+                        class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg leading-5 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                </div>
+                <div class="w-full md:w-48">
+                    <select
+                        name="category"
+                        class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                        onchange="this.form.submit()"
+                    >
+                        <option value="">Todas las categorías</option>
+                        {
+                            categories.map((cat) => (
+                                <option value={cat} selected={cat === category}>
+                                    {cat}
+                                </option>
+                            ))
+                        }
+                    </select>
+                </div>
+                <!-- View Toggle -->
+                <div class="flex bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
+                    <button
+                        type="button"
+                        id="view-grid"
+                        class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none active-view"
+                        title="Vista Cuadrícula"
+                    >
+                        <svg
+                            class="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                            ></path>
+                        </svg>
+                    </button>
+                    <button
+                        type="button"
+                        id="view-list"
+                        class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none"
+                        title="Vista Lista"
+                    >
+                        <svg
+                            class="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- New Note Form (Hidden by default) -->
+        <div
+            id="new-note-form"
+            class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6"
+        >
+            <form id="create-note-form" class="space-y-4">
+                <div>
+                    <label
+                        for="title"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        >Título</label
+                    >
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        required
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="Título de la nota"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="category"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        >Categoría</label
+                    >
+                    <input
+                        type="text"
+                        id="category-input"
+                        name="category"
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="Ej: Trabajo, Personal, Ideas"
+                        list="categories-list"
+                        value="General"
+                    />
+                    <datalist id="categories-list">
+                        {categories.map((cat) => <option value={cat} />)}
+                    </datalist>
+                </div>
+                <div>
+                    <label
+                        for="link"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        >Enlace (Opcional)</label
+                    >
+                    <input
+                        type="url"
+                        id="link"
+                        name="link"
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="https://ejemplo.com"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="content"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        >Contenido</label
+                    >
+                    <textarea
+                        id="content"
+                        name="content"
+                        rows="3"
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="Escribe tu nota aquí..."></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button
+                        type="button"
+                        id="cancel-note-btn"
+                        class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
+                    >
+                        Guardar Nota
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Notes Grid/List -->
+        <div
+            id="notes-container"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+            {
+                notes.map((note: any) => (
+                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 hover:shadow-md transition note-card">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="px-2 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full">
+                                {note.category || "General"}
+                            </span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                {new Date(note.created_at).toLocaleDateString()}
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                            {note.title}
+                        </h3>
+                        {note.content && (
+                            <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3 note-content">
+                                {note.content}
+                            </p>
+                        )}
+                        {note.link && (
+                            <a
+                                href={note.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+                            >
+                                <svg
+                                    class="w-4 h-4 mr-1"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                    />
+                                </svg>
+                                Ver enlace
+                            </a>
+                        )}
+                    </div>
+                ))
+            }
+        </div>
+
+        {
+            notes.length === 0 && (
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg
+                            class="w-8 h-8 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                            />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                        {search || category
+                            ? "No se encontraron resultados"
+                            : "No hay notas"}
+                    </h3>
+                    <p class="text-gray-500 dark:text-gray-400">
+                        {search || category
+                            ? "Intenta con otros filtros."
+                            : "Crea tu primera nota o comparte contenido desde otras apps."}
+                    </p>
+                </div>
+            )
+        }
+
+        <!-- Pagination -->
+        {
+            totalPages > 1 && (
+                <div class="flex justify-center mt-8">
+                    <nav class="flex items-center space-x-2">
+                        <a
+                            href={`?page=${page - 1}&search=${search}&category=${category}`}
+                            class={`px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
+                        >
+                            Anterior
+                        </a>
+                        <span class="px-4 py-2 text-gray-700 dark:text-gray-300">
+                            Página {page} de {totalPages}
+                        </span>
+                        <a
+                            href={`?page=${page + 1}&search=${search}&category=${category}`}
+                            class={`px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 ${page >= totalPages ? "pointer-events-none opacity-50" : ""}`}
+                        >
+                            Siguiente
+                        </a>
+                    </nav>
+                </div>
+            )
+        }
+    </div>
+</Layout>
+
+<style>
+    /* List View Styles */
+    .list-view {
+        grid-template-columns: 1fr !important;
+    }
+
+    .list-view .note-card {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+        .list-view .note-card {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .list-view .note-content {
+            flex: 1;
+            margin: 0 1rem;
+            margin-bottom: 0;
+            -webkit-line-clamp: 2;
+        }
+    }
+</style>
+
+<script>
+    const newNoteBtn = document.getElementById("new-note-btn");
+    const cancelNoteBtn = document.getElementById("cancel-note-btn");
+    const newNoteForm = document.getElementById("new-note-form");
+    const createNoteForm = document.getElementById("create-note-form");
+    const viewGridBtn = document.getElementById("view-grid");
+    const viewListBtn = document.getElementById("view-list");
+    const notesContainer = document.getElementById("notes-container");
+
+    // Active classes
+    const activeClasses = [
+        "bg-white",
+        "dark:bg-slate-600",
+        "shadow-sm",
+        "text-indigo-600",
+        "dark:text-indigo-400",
+    ];
+    const inactiveClasses = [
+        "text-gray-500",
+        "dark:text-gray-400",
+        "hover:text-gray-900",
+        "dark:hover:text-white",
+    ];
+
+    // View Toggle Logic
+    const setView = (view: "grid" | "list") => {
+        if (view === "list") {
+            notesContainer?.classList.add("list-view");
+
+            // Update buttons
+            viewListBtn?.classList.add(...activeClasses);
+            viewListBtn?.classList.remove(...inactiveClasses);
+
+            viewGridBtn?.classList.remove(...activeClasses);
+            viewGridBtn?.classList.add(...inactiveClasses);
+
+            localStorage.setItem("notesView", "list");
+        } else {
+            notesContainer?.classList.remove("list-view");
+
+            // Update buttons
+            viewGridBtn?.classList.add(...activeClasses);
+            viewGridBtn?.classList.remove(...inactiveClasses);
+
+            viewListBtn?.classList.remove(...activeClasses);
+            viewListBtn?.classList.add(...inactiveClasses);
+
+            localStorage.setItem("notesView", "grid");
+        }
+    };
+
+    // Load saved view
+    const savedView = localStorage.getItem("notesView");
+    if (savedView === "list") {
+        setView("list");
+    } else {
+        // Default to grid (set initial state for buttons)
+        setView("grid");
+    }
+
+    viewGridBtn?.addEventListener("click", () => setView("grid"));
+    viewListBtn?.addEventListener("click", () => setView("list"));
+
+    // Check for URL parameters to pre-fill form (Deep Linking / Shortcuts)
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedTitle = urlParams.get("title");
+    const sharedText = urlParams.get("text") || urlParams.get("content");
+    const sharedUrl = urlParams.get("url") || urlParams.get("link");
+
+    if ((sharedTitle || sharedText || sharedUrl) && newNoteBtn && newNoteForm) {
+        // Open the form
+        newNoteForm.classList.remove("hidden");
+        newNoteBtn.classList.add("hidden");
+
+        // Fill the fields
+        const titleInput = document.getElementById("title") as HTMLInputElement;
+        const contentInput = document.getElementById(
+            "content",
+        ) as HTMLTextAreaElement;
+        const linkInput = document.getElementById("link") as HTMLInputElement;
+
+        if (titleInput && sharedTitle) titleInput.value = sharedTitle;
+        if (contentInput && sharedText) contentInput.value = sharedText;
+        if (linkInput && sharedUrl) linkInput.value = sharedUrl;
+
+        // If we have a link but no content, and the link looks like it might be the content (common in some shares)
+        if (sharedUrl && !sharedText && !linkInput.value) {
+            linkInput.value = sharedUrl;
+        }
+
+        // Clean up URL to avoid re-triggering on refresh
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete("title");
+        newUrl.searchParams.delete("text");
+        newUrl.searchParams.delete("content");
+        newUrl.searchParams.delete("url");
+        newUrl.searchParams.delete("link");
+        window.history.replaceState({}, "", newUrl);
+    }
+
+    if (newNoteBtn && newNoteForm && cancelNoteBtn) {
+        newNoteBtn.addEventListener("click", () => {
+            newNoteForm.classList.remove("hidden");
+            newNoteBtn.classList.add("hidden");
+        });
+
+        cancelNoteBtn.addEventListener("click", () => {
+            newNoteForm.classList.add("hidden");
+            newNoteBtn.classList.remove("hidden");
+        });
+    }
+
+    if (createNoteForm) {
+        createNoteForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target as HTMLFormElement);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch("/api/notes", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Error al crear la nota");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error al crear la nota");
+            }
+        });
+    }
+</script>
