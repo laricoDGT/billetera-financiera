@@ -186,6 +186,184 @@ if (!session) {
         </form>
     </template>
 
+    <!-- Payment Confirmation Modal Template -->
+    <template id="payment-modal-template">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                Confirmar Pago
+            </h3>
+            <button
+                onclick="closeModal()"
+                class="text-gray-400 hover:text-gray-600"
+            >
+                <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <p class="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                    Estás a punto de marcar como pagado:
+                </p>
+                <p
+                    class="font-semibold text-gray-900 dark:text-white"
+                    id="payment-reminder-title"
+                >
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Monto: <span id="payment-amount" class="font-medium"></span>
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Vencimiento: <span id="payment-due-date" class="font-medium"
+                    ></span>
+                </p>
+                <p
+                    class="text-sm text-gray-600 dark:text-gray-400"
+                    id="payment-frequency-info"
+                >
+                </p>
+            </div>
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >Notas (opcional)</label
+                >
+                <textarea
+                    id="payment-notes"
+                    rows="3"
+                    placeholder="Agregar notas sobre este pago..."
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                ></textarea>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button
+                    type="button"
+                    onclick="closeModal()"
+                    class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition"
+                >
+                    Cancelar
+                </button>
+                <button
+                    type="button"
+                    id="confirm-payment-btn"
+                    onclick="confirmPayment()"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <svg
+                        id="payment-spinner"
+                        class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"></circle>
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                    <span id="payment-btn-text">Confirmar Pago</span>
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Payment History Modal Template -->
+    <template id="history-modal-template">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                Historial de Pagos
+            </h3>
+            <button
+                onclick="closeModal()"
+                class="text-gray-400 hover:text-gray-600"
+            >
+                <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="mb-4">
+            <p
+                class="font-semibold text-gray-900 dark:text-white"
+                id="history-reminder-title"
+            >
+            </p>
+            <p
+                class="text-sm text-gray-500 dark:text-gray-400"
+                id="history-reminder-frequency"
+            >
+            </p>
+        </div>
+        <div
+            id="payment-history-list"
+            class="space-y-3 max-h-96 overflow-y-auto"
+        >
+            <!-- Payment history items will be inserted here -->
+        </div>
+        <div
+            class="mt-4 text-center"
+            id="history-loading"
+            style="display: none;"
+        >
+            <svg
+                class="animate-spin h-8 w-8 mx-auto text-indigo-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+            >
+                <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"></circle>
+                <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+            </svg>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                Cargando historial...
+            </p>
+        </div>
+        <div
+            class="mt-4 text-center text-sm text-gray-500 dark:text-gray-400"
+            id="no-payments-message"
+            style="display: none;"
+        >
+            No hay pagos registrados aún.
+        </div>
+    </template>
+
     <script>
         // Declare global showToast function
         declare global {
@@ -328,34 +506,43 @@ if (!session) {
             const daysUntil = Math.ceil(
                 (dueDate - new Date()) / (1000 * 60 * 60 * 24),
             );
+            const isInactive = !reminder.is_active;
 
             return `
-                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border border-gray-200 dark:border-slate-700 opacity-${reminder.is_paid ? "60" : "100"}">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border border-gray-200 dark:border-slate-700 ${isInactive ? "opacity-60" : ""}">
                     <div class="flex items-start justify-between mb-3">
                         <div class="flex items-center space-x-2">
                             <span class="text-2xl">${getIconForFrequency(reminder.frequency)}</span>
                             <div>
-                                <h3 class="font-semibold text-gray-900 dark:text-white ${reminder.is_paid ? "line-through" : ""}">${reminder.title}</h3>
+                                <h3 class="font-semibold text-gray-900 dark:text-white ${isInactive ? "line-through" : ""}">${reminder.title}</h3>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">${getFrequencyLabel(reminder.frequency)}</p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <button onclick="editReminder(${reminder.id})" class="text-gray-400 hover:text-indigo-500 transition">
+                            ${
+                                !isInactive
+                                    ? `
+                                <button onclick="openPaymentModal(${reminder.id})" class="text-gray-400 hover:text-green-500 transition" title="Marcar como pagado">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
+                            `
+                                    : ""
+                            }
+                            <button onclick="viewPaymentHistory(${reminder.id})" class="text-gray-400 hover:text-blue-500 transition" title="Ver historial">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </button>
+                            <button onclick="editReminder(${reminder.id})" class="text-gray-400 hover:text-indigo-500 transition" title="Editar">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                             </button>
-                             <button onclick="deleteReminder(${reminder.id})" class="text-gray-400 hover:text-red-500 transition">
+                             <button onclick="deleteReminder(${reminder.id})" class="text-gray-400 hover:text-red-500 transition" title="Eliminar">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" ${reminder.is_paid ? "checked" : ""} onchange="togglePaid(${reminder.id}, this.checked)" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
-                            </label>
                         </div>
                     </div>
                     <div class="flex justify-between items-center text-sm">
                         <span class="text-gray-600 dark:text-gray-400">$${parseFloat(reminder.amount).toFixed(2)}</span>
-                        <span class="${reminder.is_paid ? "text-green-600" : "text-indigo-600"} font-medium">
-                            ${reminder.is_paid ? "Pagado" : daysUntil < 0 ? `Venció hace ${Math.abs(daysUntil)} días` : `En ${daysUntil} días`}
+                        <span class="${isInactive ? "text-gray-400" : daysUntil < 0 ? "text-red-600" : "text-indigo-600"} font-medium">
+                            ${isInactive ? "Completado" : daysUntil < 0 ? `Venció hace ${Math.abs(daysUntil)} días` : `En ${daysUntil} días`}
                         </span>
                     </div>
                 </div>
@@ -523,6 +710,197 @@ if (!session) {
                 window.showToast("Error al eliminar", "error");
             }
         };
+
+        // --- Payment Modal Logic ---
+        let currentPaymentReminderId = null;
+
+        window.openPaymentModal = async function (id) {
+            currentPaymentReminderId = id;
+            const reminder = reminders.find((r) => r.id === id);
+            if (!reminder) return;
+
+            const template = document.getElementById("payment-modal-template");
+            const content = document.getElementById("modal-content");
+            const overlay = document.getElementById("modal-overlay");
+
+            if (!template || !content || !overlay) return;
+
+            content.innerHTML = template.innerHTML;
+
+            // Populate payment details
+            const titleEl = document.getElementById("payment-reminder-title");
+            const amountEl = document.getElementById("payment-amount");
+            const dueDateEl = document.getElementById("payment-due-date");
+            const frequencyInfoEl = document.getElementById(
+                "payment-frequency-info",
+            );
+
+            if (titleEl) titleEl.textContent = reminder.title;
+            if (amountEl)
+                amountEl.textContent = `$${parseFloat(reminder.amount).toFixed(2)}`;
+            if (dueDateEl)
+                dueDateEl.textContent = new Date(
+                    reminder.due_date,
+                ).toLocaleDateString("es-ES");
+
+            if (frequencyInfoEl) {
+                if (reminder.frequency === "once") {
+                    frequencyInfoEl.textContent =
+                        "Este recordatorio se marcará como completado.";
+                } else {
+                    const nextDate = calculateNextDueDateClient(
+                        new Date(reminder.due_date),
+                        reminder.frequency,
+                    );
+                    frequencyInfoEl.textContent = `Próximo vencimiento: ${nextDate.toLocaleDateString("es-ES")} (${getFrequencyLabel(reminder.frequency)})`;
+                }
+            }
+
+            overlay.classList.remove("hidden");
+        };
+
+        window.confirmPayment = async function () {
+            if (!currentPaymentReminderId) return;
+
+            const notesEl = document.getElementById("payment-notes");
+            const notes = notesEl ? notesEl.value : "";
+
+            const btn = document.getElementById("confirm-payment-btn");
+            const spinner = document.getElementById("payment-spinner");
+            const btnText = document.getElementById("payment-btn-text");
+
+            // Show loading state
+            if (btn) {
+                // @ts-ignore
+                btn.disabled = true;
+            }
+            if (spinner) spinner.classList.remove("hidden");
+            if (btnText) btnText.textContent = "Procesando...";
+
+            try {
+                const response = await fetch("/api/reminders", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id: currentPaymentReminderId,
+                        is_paid: true,
+                        payment_notes: notes,
+                    }),
+                });
+
+                if (!response.ok) throw new Error("Failed to mark as paid");
+
+                closeModal();
+                fetchReminders();
+                window.showToast("Pago registrado exitosamente", "success");
+                currentPaymentReminderId = null;
+            } catch (error) {
+                console.error("Error:", error);
+                window.showToast("Error al registrar el pago", "error");
+            } finally {
+                // Reset loading state
+                if (btn) {
+                    // @ts-ignore
+                    btn.disabled = false;
+                }
+                if (spinner) spinner.classList.add("hidden");
+                if (btnText) btnText.textContent = "Confirmar Pago";
+            }
+        };
+
+        // --- Payment History Modal Logic ---
+        window.viewPaymentHistory = async function (id) {
+            const reminder = reminders.find((r) => r.id === id);
+            if (!reminder) return;
+
+            const template = document.getElementById("history-modal-template");
+            const content = document.getElementById("modal-content");
+            const overlay = document.getElementById("modal-overlay");
+
+            if (!template || !content || !overlay) return;
+
+            content.innerHTML = template.innerHTML;
+
+            // Set reminder info
+            const titleEl = document.getElementById("history-reminder-title");
+            const frequencyEl = document.getElementById(
+                "history-reminder-frequency",
+            );
+
+            if (titleEl) titleEl.textContent = reminder.title;
+            if (frequencyEl)
+                frequencyEl.textContent = getFrequencyLabel(reminder.frequency);
+
+            // Show loading state
+            const loadingEl = document.getElementById("history-loading");
+            const listEl = document.getElementById("payment-history-list");
+            const noPaymentsEl = document.getElementById("no-payments-message");
+
+            if (loadingEl) loadingEl.style.display = "block";
+            if (listEl) listEl.innerHTML = "";
+            if (noPaymentsEl) noPaymentsEl.style.display = "none";
+
+            overlay.classList.remove("hidden");
+
+            // Fetch payment history
+            try {
+                const response = await fetch(`/api/reminders/${id}/payments`);
+                if (!response.ok) throw new Error("Failed to fetch history");
+
+                const payments = await response.json();
+
+                // Hide loading
+                if (loadingEl) loadingEl.style.display = "none";
+
+                if (payments.length === 0) {
+                    if (noPaymentsEl) noPaymentsEl.style.display = "block";
+                } else {
+                    if (listEl) {
+                        listEl.innerHTML = payments
+                            .map(
+                                (payment) => `
+                            <div class="bg-gray-50 dark:bg-slate-700 p-4 rounded-lg">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <p class="font-medium text-gray-900 dark:text-white">$${parseFloat(payment.amount).toFixed(2)}</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Vencimiento: ${new Date(payment.due_date).toLocaleDateString("es-ES")}</p>
+                                    </div>
+                                    <span class="text-xs text-green-600 dark:text-green-400 font-medium">Pagado</span>
+                                </div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Fecha de pago: ${new Date(payment.paid_date).toLocaleDateString("es-ES")}</p>
+                                ${payment.notes ? `<p class="text-sm text-gray-600 dark:text-gray-300 mt-2">${payment.notes}</p>` : ""}
+                            </div>
+                        `,
+                            )
+                            .join("");
+                    }
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                if (loadingEl) loadingEl.style.display = "none";
+                window.showToast("Error al cargar el historial", "error");
+                closeModal();
+            }
+        };
+
+        // Helper function to calculate next due date on client side
+        function calculateNextDueDateClient(currentDueDate, frequency) {
+            const next = new Date(currentDueDate);
+
+            switch (frequency) {
+                case "weekly":
+                    next.setDate(next.getDate() + 7);
+                    break;
+                case "monthly":
+                    next.setMonth(next.getMonth() + 1);
+                    break;
+                case "yearly":
+                    next.setFullYear(next.getFullYear() + 1);
+                    break;
+            }
+
+            return next;
+        }
 
         // Initialize
         fetchReminders();

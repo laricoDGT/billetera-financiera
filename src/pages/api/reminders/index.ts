@@ -89,7 +89,7 @@ export const PUT: APIRoute = async ({ request }) => {
 
     try {
         const body = await request.json();
-        const { id, title, amount, due_date, frequency, is_paid } = body;
+        const { id, title, amount, due_date, frequency, is_paid, payment_notes } = body;
 
         if (!id) {
             return new Response(JSON.stringify({ error: "Reminder ID is required" }), {
@@ -98,26 +98,54 @@ export const PUT: APIRoute = async ({ request }) => {
             });
         }
 
-        // Build dynamic query based on provided fields
-        // For simplicity, we'll update all fields if provided, or just specific ones if we were building a more complex builder.
-        // But here we can assume the client sends the full object or we handle partial updates.
-        // Let's handle specific "mark as paid" vs "edit details" logic if needed, but a generic update is fine.
-
-        // If is_paid is explicitly provided, we update it.
-        // If other fields are provided, we update them.
-
         let result;
-        if (is_paid !== undefined && title === undefined) {
-            // Just updating status
-            result = await query(
-                'UPDATE reminders SET is_paid = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
-                [is_paid, id, session.user.id]
+
+        // Handle marking as paid (payment flow)
+        if (is_paid === true && title === undefined) {
+            // Fetch current reminder data
+            const currentReminder = await query(
+                'SELECT * FROM reminders WHERE id = $1 AND user_id = $2',
+                [id, session.user.id]
             );
+
+            if (currentReminder.rows.length === 0) {
+                return new Response(JSON.stringify({ error: "Reminder not found or unauthorized" }), {
+                    status: 404,
+                    headers: { "Content-Type": "application/json" },
+                });
+            }
+
+            const reminder = currentReminder.rows[0];
+
+            // Create payment record
+            await query(
+                'INSERT INTO reminder_payments (reminder_id, user_id, amount, due_date, notes) VALUES ($1, $2, $3, $4, $5)',
+                [id, session.user.id, reminder.amount, reminder.due_date, payment_notes || null]
+            );
+
+            // Handle recurrence based on frequency
+            if (reminder.frequency === 'once') {
+                // For one-time reminders, mark as inactive
+                result = await query(
+                    'UPDATE reminders SET is_active = false, last_paid_date = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
+                    [reminder.due_date, id, session.user.id]
+                );
+            } else {
+                // For recurring reminders, calculate next due date
+                const currentDueDate = new Date(reminder.due_date);
+                const nextDueDate = calculateNextDueDate(currentDueDate, reminder.frequency);
+                const nextDueDateStr = formatDateForDB(nextDueDate);
+
+                result = await query(
+                    'UPDATE reminders SET due_date = $1, last_paid_date = $2 WHERE id = $3 AND user_id = $4 RETURNING *',
+                    [nextDueDateStr, reminder.due_date, id, session.user.id]
+                );
+            }
         } else {
-            // Full update
+            // Regular edit flow - update reminder details
             result = await query(
-                'UPDATE reminders SET title = $1, amount = $2, due_date = $3, frequency = $4, is_paid = $5 WHERE id = $6 AND user_id = $7 RETURNING *',
-                [title, amount, due_date, frequency, is_paid !== undefined ? is_paid : false, id, session.user.id]
+                'UPDATE reminders SET title = $1, amount = $2, due_date = $3, frequency = $4 WHERE id = $5 AND user_id = $6 RETURNING *',
+                [title, amount, due_date, frequency, id, session.user.id]
             );
         }
 
@@ -141,6 +169,48 @@ export const PUT: APIRoute = async ({ request }) => {
         });
     }
 };
+
+// Helper functions
+function calculateNextDueDate(currentDueDate: Date, frequency: string): Date {
+    const next = new Date(currentDueDate);
+
+    switch (frequency) {
+        case 'weekly':
+            next.setDate(next.getDate() + 7);
+            break;
+        case 'monthly':
+            const currentDay = currentDueDate.getDate();
+            next.setMonth(next.getMonth() + 1);
+            if (next.getDate() !== currentDay) {
+                next.setDate(0);
+            }
+            break;
+        case 'yearly':
+            next.setFullYear(next.getFullYear() + 1);
+            if (currentDueDate.getMonth() === 1 && currentDueDate.getDate() === 29) {
+                if (!isLeapYear(next.getFullYear())) {
+                    next.setDate(28);
+                }
+            }
+            break;
+        default:
+            return currentDueDate;
+    }
+
+    return next;
+}
+
+function isLeapYear(year: number): boolean {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+}
+
+function formatDateForDB(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 
 export const DELETE: APIRoute = async ({ request }) => {
     const session = await auth.api.getSession({
