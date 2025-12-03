@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Toast from "../components/Toast.astro";
 import { auth } from "../lib/auth";
 import { query } from "../lib/db";
 
@@ -73,7 +74,8 @@ try {
 ---
 
 <Layout title="Notas">
-    <div class="max-w-6xl mx-auto space-y-6">
+    <Toast />
+    <div class="mb-6">
         <div
             class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
         >
@@ -99,293 +101,307 @@ try {
                 <span>Nueva Nota</span>
             </button>
         </div>
+    </div>
 
-        <!-- Filters & Search -->
-        <div
-            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4"
-        >
-            <form method="GET" class="flex flex-col md:flex-row gap-4">
-                <div class="flex-1 relative">
-                    <div
-                        class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-                    >
-                        <svg
-                            class="h-5 w-5 text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                            ></path>
-                        </svg>
+
+    <!-- Filters & Search & Bulk Actions -->
+    <div class="mb-6">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4">
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <!-- Bulk Actions (Hidden by default) -->
+                <div id="bulk-actions" class="hidden flex-1 flex items-center space-x-4 bg-indigo-50 dark:bg-indigo-900/20 p-2 rounded-lg w-full md:w-auto">
+                    <div class="flex items-center space-x-2">
+                        <input type="checkbox" id="select-all-bulk" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-5 h-5">
+                        <span class="text-sm font-medium text-indigo-700 dark:text-indigo-300" id="selected-count">0 seleccionados</span>
                     </div>
-                    <input
-                        type="text"
-                        name="search"
-                        value={search}
-                        placeholder="Buscar notas..."
-                        class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg leading-5 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
-                </div>
-                <div class="w-full md:w-48">
-                    <select
-                        name="category"
-                        class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
-                        onchange="this.form.submit()"
-                    >
-                        <option value="">Todas las categorías</option>
-                        {
-                            categories.map((cat) => (
-                                <option value={cat} selected={cat === category}>
-                                    {cat}
-                                </option>
-                            ))
-                        }
-                    </select>
-                </div>
-                <!-- View Toggle -->
-                <div class="flex bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
-                    <button
-                        type="button"
-                        id="view-grid"
-                        class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none active-view"
-                        title="Vista Cuadrícula"
-                    >
-                        <svg
-                            class="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                            ></path>
-                        </svg>
+                    <button id="bulk-delete-btn" class="text-red-600 hover:text-red-700 text-sm font-medium flex items-center space-x-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <span>Eliminar</span>
                     </button>
-                    <button
-                        type="button"
-                        id="view-list"
-                        class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none"
-                        title="Vista Lista"
-                    >
-                        <svg
-                            class="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
+                    <button id="cancel-bulk-btn" class="text-gray-500 hover:text-gray-700 text-sm font-medium ml-auto">Cancelar</button>
                 </div>
-            </form>
-        </div>
 
-        <!-- New Note Form (Hidden by default) -->
-        <div
-            id="new-note-form"
-            class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6"
-        >
-            <form id="create-note-form" class="space-y-4">
-                <div>
-                    <label
-                        for="title"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                        >Título</label
-                    >
-                    <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        required
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="Título de la nota"
-                    />
-                </div>
-                <div>
-                    <label
-                        for="category"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                        >Categoría</label
-                    >
-                    <input
-                        type="text"
-                        id="category-input"
-                        name="category"
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="Ej: Trabajo, Personal, Ideas"
-                        list="categories-list"
-                        value="General"
-                    />
-                    <datalist id="categories-list">
-                        {categories.map((cat) => <option value={cat} />)}
-                    </datalist>
-                </div>
-                <div>
-                    <label
-                        for="link"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                        >Enlace (Opcional)</label
-                    >
-                    <input
-                        type="url"
-                        id="link"
-                        name="link"
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="https://ejemplo.com"
-                    />
-                </div>
-                <div>
-                    <label
-                        for="content"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                        >Contenido</label
-                    >
-                    <textarea
-                        id="content"
-                        name="content"
-                        rows="3"
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="Escribe tu nota aquí..."></textarea>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button
-                        type="button"
-                        id="cancel-note-btn"
-                        class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
-                    >
-                        Guardar Nota
-                    </button>
-                </div>
-            </form>
-        </div>
+                <!-- Standard Filters (Hidden when bulk active) -->
+                <form id="filter-form" method="GET" class="flex flex-col md:flex-row gap-4 flex-1 w-full">
+                    <div class="flex-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            name="search"
+                            value={search}
+                            placeholder="Buscar notas..."
+                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg leading-5 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                    </div>
+                    <div class="w-full md:w-48">
+                        <select
+                            name="category"
+                            class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                            onchange="this.form.submit()"
+                        >
+                            <option value="">Todas las categorías</option>
+                            {categories.map((cat) => (
+                                <option value={cat} selected={cat === category}>{cat}</option>
+                            ))}
+                        </select>
+                    </div>
+                </form>
 
-        <!-- Notes Grid/List -->
-        <div
-            id="notes-container"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-            {
-                notes.map((note: any) => (
-                    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 hover:shadow-md transition note-card">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="px-2 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full">
-                                {note.category || "General"}
-                            </span>
+                <!-- View Toggle & Select Mode -->
+                <div class="flex items-center space-x-2">
+                    <button
+                        id="toggle-select-mode"
+                        class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+                        title="Seleccionar notas"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </button>
+                    <div class="flex bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
+                        <button
+                            type="button"
+                            id="view-grid"
+                            class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none active-view"
+                            title="Vista Cuadrícula"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                            </svg>
+                        </button>
+                        <button
+                            type="button"
+                            id="view-list"
+                            class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none"
+                            title="Vista Lista"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Note Form (Hidden by default) -->
+    <div
+        id="new-note-form"
+        class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 mb-6"
+    >
+        <form id="create-note-form" class="space-y-4">
+            <input type="hidden" id="note-id" name="id" />
+            <div>
+                <label
+                    for="title"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >Título</label
+                >
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    required
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="Título de la nota"
+                />
+            </div>
+            <div>
+                <label
+                    for="category"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >Categoría</label
+                >
+                <input
+                    type="text"
+                    id="category-input"
+                    name="category"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="Ej: Trabajo, Personal, Ideas"
+                    list="categories-list"
+                    value="General"
+                />
+                <datalist id="categories-list">
+                    {categories.map((cat) => <option value={cat} />)}
+                </datalist>
+            </div>
+            <div>
+                <label
+                    for="link"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >Enlace (Opcional)</label
+                >
+                <input
+                    type="url"
+                    id="link"
+                    name="link"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="https://ejemplo.com"
+                />
+            </div>
+            <div>
+                <label
+                    for="content"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >Contenido</label
+                >
+                <textarea
+                    id="content"
+                    name="content"
+                    rows="3"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="Escribe tu nota aquí..."></textarea>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button
+                    type="button"
+                    id="cancel-note-btn"
+                    class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition"
+                >
+                    Cancelar
+                </button>
+                <button
+                    type="submit"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center"
+                >
+                    Guardar Nota
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Notes Grid/List -->
+    <div
+        id="notes-container"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+    >
+        {
+            notes.map((note: any) => (
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 hover:shadow-md transition note-card relative group" data-id={note.id}>
+                    
+                    <div class="selection-checkbox hidden absolute top-4 left-4 z-10">
+                        <input type="checkbox" class="note-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-5 h-5" value={note.id}>
+                    </div>
+
+                    <div class="flex justify-between items-start mb-4 pl-8 selection-spacer hidden">
+                    
+                    </div>
+
+                    <div class="flex justify-between items-start mb-4 header-row">
+                        <span class="px-2 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full">
+                            {note.category || "General"}
+                        </span>
+                        <div class="flex items-center space-x-2">
                             <span class="text-xs text-gray-500 dark:text-gray-400">
                                 {new Date(note.created_at).toLocaleDateString()}
                             </span>
+                            <!-- Actions Dropdown/Buttons -->
+                            <div class="flex space-x-1  transition-opacity">
+                                <button class="edit-note-btn p-1 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400" title="Editar" data-note={JSON.stringify(note)}>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button class="delete-note-btn p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400" title="Eliminar" data-id={note.id}>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                            {note.title}
-                        </h3>
-                        {note.content && (
-                            <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3 note-content">
-                                {note.content}
-                            </p>
-                        )}
-                        {note.link && (
-                            <a
-                                href={note.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="inline-flex items-center text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-                            >
-                                <svg
-                                    class="w-4 h-4 mr-1"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                    />
-                                </svg>
-                                Ver enlace
-                            </a>
-                        )}
                     </div>
-                ))
-            }
-        </div>
-
-        {
-            notes.length === 0 && (
-                <div class="text-center py-12">
-                    <div class="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg
-                            class="w-8 h-8 text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                            />
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                        {search || category
-                            ? "No se encontraron resultados"
-                            : "No hay notas"}
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        {note.title}
                     </h3>
-                    <p class="text-gray-500 dark:text-gray-400">
-                        {search || category
-                            ? "Intenta con otros filtros."
-                            : "Crea tu primera nota o comparte contenido desde otras apps."}
-                    </p>
-                </div>
-            )
-        }
-
-        <!-- Pagination -->
-        {
-            totalPages > 1 && (
-                <div class="flex justify-center mt-8">
-                    <nav class="flex items-center space-x-2">
+                    {note.content && (
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3 note-content">
+                            {note.content}
+                        </p>
+                    )}
+                    {note.link && (
                         <a
-                            href={`?page=${page - 1}&search=${search}&category=${category}`}
-                            class={`px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
+                            href={note.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
                         >
-                            Anterior
+                            <svg
+                                class="w-4 h-4 mr-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                ></path>
+                            </svg>
+                            Ver enlace
                         </a>
-                        <span class="px-4 py-2 text-gray-700 dark:text-gray-300">
-                            Página {page} de {totalPages}
-                        </span>
-                        <a
-                            href={`?page=${page + 1}&search=${search}&category=${category}`}
-                            class={`px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 ${page >= totalPages ? "pointer-events-none opacity-50" : ""}`}
-                        >
-                            Siguiente
-                        </a>
-                    </nav>
+                    )}
                 </div>
-            )
+            ))
         }
     </div>
+
+    {
+        notes.length === 0 && (
+            <div class="text-center py-12">
+                <div class="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg
+                        class="w-8 h-8 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                        />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    {search || category
+                        ? "No se encontraron resultados"
+                        : "No hay notas"}
+                </h3>
+                <p class="text-gray-500 dark:text-gray-400">
+                    {search || category
+                        ? "Intenta con otros filtros."
+                        : "Crea tu primera nota o comparte contenido desde otras apps."}
+                </p>
+            </div>
+        )
+    }
+
+     
+    {
+        totalPages > 1 && (
+            <div class="flex justify-center mt-8">
+                <nav class="flex items-center space-x-2">
+                    <a
+                        href={`?page=${page - 1}&search=${search}&category=${category}`}
+                        class={`px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 ${page <= 1 ? "pointer-events-none opacity-50" : ""}`}
+                    >
+                        Anterior
+                    </a>
+                    <span class="px-4 py-2 text-gray-700 dark:text-gray-300">
+                        Página {page} de {totalPages}
+                    </span>
+                    <a
+                        href={`?page=${page + 1}&search=${search}&category=${category}`}
+                        class={`px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 ${page >= totalPages ? "pointer-events-none opacity-50" : ""}`}
+                    >
+                        Siguiente
+                    </a>
+                </nav>
+            </div>
+        )
+    }
+
 </Layout>
 
 <style>
@@ -424,66 +440,67 @@ try {
     const viewGridBtn = document.getElementById("view-grid");
     const viewListBtn = document.getElementById("view-list");
     const notesContainer = document.getElementById("notes-container");
+    
+    // Bulk Actions Elements
+    const toggleSelectModeBtn = document.getElementById("toggle-select-mode");
+    const bulkActionsBar = document.getElementById("bulk-actions");
+    const filterForm = document.getElementById("filter-form");
+    const selectAllBulk = document.getElementById("select-all-bulk") as HTMLInputElement;
+    const selectedCountSpan = document.getElementById("selected-count");
+    const bulkDeleteBtn = document.getElementById("bulk-delete-btn");
+    const cancelBulkBtn = document.getElementById("cancel-bulk-btn");
+    const noteCheckboxes = document.querySelectorAll(".note-checkbox");
+    const selectionCheckboxes = document.querySelectorAll(".selection-checkbox");
+    const selectionSpacers = document.querySelectorAll(".selection-spacer");
 
     // Active classes
-    const activeClasses = [
-        "bg-white",
-        "dark:bg-slate-600",
-        "shadow-sm",
-        "text-indigo-600",
-        "dark:text-indigo-400",
-    ];
-    const inactiveClasses = [
-        "text-gray-500",
-        "dark:text-gray-400",
-        "hover:text-gray-900",
-        "dark:hover:text-white",
-    ];
+    const activeClasses = ["bg-white", "dark:bg-slate-600", "shadow-sm", "text-indigo-600", "dark:text-indigo-400"];
+    const inactiveClasses = ["text-gray-500", "dark:text-gray-400", "hover:text-gray-900", "dark:hover:text-white"];
 
     // View Toggle Logic
-    const setView = (view: "grid" | "list") => {
-        if (view === "list") {
-            notesContainer?.classList.add("list-view");
-
+    const setView = (view: 'grid' | 'list') => {
+        if (view === 'list') {
+            notesContainer?.classList.add('list-view');
+            
             // Update buttons
             viewListBtn?.classList.add(...activeClasses);
             viewListBtn?.classList.remove(...inactiveClasses);
-
+            
             viewGridBtn?.classList.remove(...activeClasses);
             viewGridBtn?.classList.add(...inactiveClasses);
-
-            localStorage.setItem("notesView", "list");
+            
+            localStorage.setItem('notesView', 'list');
         } else {
-            notesContainer?.classList.remove("list-view");
-
+            notesContainer?.classList.remove('list-view');
+            
             // Update buttons
             viewGridBtn?.classList.add(...activeClasses);
             viewGridBtn?.classList.remove(...inactiveClasses);
-
+            
             viewListBtn?.classList.remove(...activeClasses);
             viewListBtn?.classList.add(...inactiveClasses);
-
-            localStorage.setItem("notesView", "grid");
+            
+            localStorage.setItem('notesView', 'grid');
         }
     };
 
     // Load saved view
-    const savedView = localStorage.getItem("notesView");
-    if (savedView === "list") {
-        setView("list");
+    const savedView = localStorage.getItem('notesView');
+    if (savedView === 'list') {
+        setView('list');
     } else {
         // Default to grid (set initial state for buttons)
-        setView("grid");
+        setView('grid');
     }
 
-    viewGridBtn?.addEventListener("click", () => setView("grid"));
-    viewListBtn?.addEventListener("click", () => setView("list"));
+    viewGridBtn?.addEventListener('click', () => setView('grid'));
+    viewListBtn?.addEventListener('click', () => setView('list'));
 
     // Check for URL parameters to pre-fill form (Deep Linking / Shortcuts)
     const urlParams = new URLSearchParams(window.location.search);
-    const sharedTitle = urlParams.get("title");
-    const sharedText = urlParams.get("text") || urlParams.get("content");
-    const sharedUrl = urlParams.get("url") || urlParams.get("link");
+    const sharedTitle = urlParams.get('title');
+    const sharedText = urlParams.get('text') || urlParams.get('content');
+    const sharedUrl = urlParams.get('url') || urlParams.get('link');
 
     if ((sharedTitle || sharedText || sharedUrl) && newNoteBtn && newNoteForm) {
         // Open the form
@@ -491,52 +508,106 @@ try {
         newNoteBtn.classList.add("hidden");
 
         // Fill the fields
-        const titleInput = document.getElementById("title") as HTMLInputElement;
-        const contentInput = document.getElementById(
-            "content",
-        ) as HTMLTextAreaElement;
-        const linkInput = document.getElementById("link") as HTMLInputElement;
+        const titleInput = document.getElementById('title') as HTMLInputElement;
+        const contentInput = document.getElementById('content') as HTMLTextAreaElement;
+        const linkInput = document.getElementById('link') as HTMLInputElement;
 
         if (titleInput && sharedTitle) titleInput.value = sharedTitle;
         if (contentInput && sharedText) contentInput.value = sharedText;
         if (linkInput && sharedUrl) linkInput.value = sharedUrl;
-
+        
         // If we have a link but no content, and the link looks like it might be the content (common in some shares)
         if (sharedUrl && !sharedText && !linkInput.value) {
-            linkInput.value = sharedUrl;
+             linkInput.value = sharedUrl;
         }
 
         // Clean up URL to avoid re-triggering on refresh
         const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete("title");
-        newUrl.searchParams.delete("text");
-        newUrl.searchParams.delete("content");
-        newUrl.searchParams.delete("url");
-        newUrl.searchParams.delete("link");
-        window.history.replaceState({}, "", newUrl);
+        newUrl.searchParams.delete('title');
+        newUrl.searchParams.delete('text');
+        newUrl.searchParams.delete('content');
+        newUrl.searchParams.delete('url');
+        newUrl.searchParams.delete('link');
+        window.history.replaceState({}, '', newUrl);
     }
 
     if (newNoteBtn && newNoteForm && cancelNoteBtn) {
         newNoteBtn.addEventListener("click", () => {
             newNoteForm.classList.remove("hidden");
             newNoteBtn.classList.add("hidden");
+            // Reset ID for new note
+            (document.getElementById('note-id') as HTMLInputElement).value = '';
         });
 
         cancelNoteBtn.addEventListener("click", () => {
             newNoteForm.classList.add("hidden");
             newNoteBtn.classList.remove("hidden");
+            (document.getElementById('create-note-form') as HTMLFormElement).reset();
         });
     }
+
+    // Toast Logic
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+        toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-y-2 opacity-0 flex items-center`;
+        
+        toast.innerHTML = `
+            <span class="mr-2">
+                ${type === 'success' 
+                    ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
+                    : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>'
+                }
+            </span>
+            ${message}
+        `;
+
+        container.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-y-2', 'opacity-0');
+        });
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.add('translate-y-2', 'opacity-0');
+            setTimeout(() => {
+                container.removeChild(toast);
+            }, 300);
+        }, 3000);
+    };
 
     if (createNoteForm) {
         createNoteForm.addEventListener("submit", async (e) => {
             e.preventDefault();
+            
+            const submitBtn = createNoteForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+            const originalBtnContent = submitBtn.innerHTML;
+            
+            // Loading State
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Guardando...
+            `;
+
             const formData = new FormData(e.target as HTMLFormElement);
             const data = Object.fromEntries(formData.entries());
+            const noteId = data.id;
+
+            // Determine method (POST for create, PUT for update)
+            const method = noteId ? "PUT" : "POST";
 
             try {
                 const response = await fetch("/api/notes", {
-                    method: "POST",
+                    method: method,
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -544,14 +615,158 @@ try {
                 });
 
                 if (response.ok) {
-                    window.location.reload();
+                    showToast(noteId ? 'Nota actualizada' : 'Nota creada exitosamente', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
-                    alert("Error al crear la nota");
+                    showToast('Error al guardar la nota', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnContent;
                 }
             } catch (error) {
                 console.error("Error:", error);
-                alert("Error al crear la nota");
+                showToast('Error de conexión', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
             }
         });
     }
+
+    // Edit Note Handler
+    document.querySelectorAll('.edit-note-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const noteData = JSON.parse((btn as HTMLElement).dataset.note || '{}');
+            
+            // Populate form
+            (document.getElementById('note-id') as HTMLInputElement).value = noteData.id;
+            (document.getElementById('title') as HTMLInputElement).value = noteData.title;
+            (document.getElementById('category-input') as HTMLInputElement).value = noteData.category || 'General';
+            (document.getElementById('link') as HTMLInputElement).value = noteData.link || '';
+            (document.getElementById('content') as HTMLTextAreaElement).value = noteData.content || '';
+
+            // Show form
+            newNoteForm?.classList.remove("hidden");
+            newNoteBtn?.classList.add("hidden");
+            
+            // Scroll to form with offset for sticky header
+            if (newNoteForm) {
+                newNoteForm.scrollIntoView({ behavior: 'smooth', block: 'start' } as ScrollIntoViewOptions);
+                // Add offset to account for sticky header
+                setTimeout(() => {
+                    window.scrollBy({ top: -100, behavior: 'smooth' });
+                }, 100);
+            }
+        });
+    });
+
+    // Delete Note Handler
+    document.querySelectorAll('.delete-note-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta nota?')) return;
+
+            const noteId = (btn as HTMLElement).dataset.id;
+            
+            try {
+                const response = await fetch("/api/notes", {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ ids: [noteId] }),
+                });
+
+                if (response.ok) {
+                    showToast('Nota eliminada', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    showToast('Error al eliminar la nota', 'error');
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                showToast('Error de conexión', 'error');
+            }
+        });
+    });
+
+    // Bulk Actions Logic
+    let isSelectMode = false;
+
+    const toggleSelectMode = () => {
+        isSelectMode = !isSelectMode;
+        
+        if (isSelectMode) {
+            bulkActionsBar?.classList.remove('hidden');
+            filterForm?.classList.add('hidden');
+            toggleSelectModeBtn?.classList.add('bg-indigo-100', 'text-indigo-600', 'dark:bg-indigo-900/30', 'dark:text-indigo-400');
+            
+            selectionCheckboxes.forEach(el => el.classList.remove('hidden'));
+            selectionSpacers.forEach(el => el.classList.remove('hidden'));
+        } else {
+            bulkActionsBar?.classList.add('hidden');
+            filterForm?.classList.remove('hidden');
+            toggleSelectModeBtn?.classList.remove('bg-indigo-100', 'text-indigo-600', 'dark:bg-indigo-900/30', 'dark:text-indigo-400');
+            
+            selectionCheckboxes.forEach(el => el.classList.add('hidden'));
+            selectionSpacers.forEach(el => el.classList.add('hidden'));
+            
+            // Deselect all
+            noteCheckboxes.forEach((cb: any) => cb.checked = false);
+            if (selectAllBulk) selectAllBulk.checked = false;
+            updateSelectedCount();
+        }
+    };
+
+    const updateSelectedCount = () => {
+        const checked = document.querySelectorAll('.note-checkbox:checked').length;
+        if (selectedCountSpan) selectedCountSpan.textContent = `${checked} seleccionados`;
+    };
+
+    toggleSelectModeBtn?.addEventListener('click', toggleSelectMode);
+    cancelBulkBtn?.addEventListener('click', toggleSelectMode);
+
+    selectAllBulk?.addEventListener('change', (e) => {
+        const isChecked = (e.target as HTMLInputElement).checked;
+        noteCheckboxes.forEach((cb: any) => cb.checked = isChecked);
+        updateSelectedCount();
+    });
+
+    noteCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+
+    bulkDeleteBtn?.addEventListener('click', async () => {
+        const selectedIds = Array.from(document.querySelectorAll('.note-checkbox:checked')).map((cb: any) => cb.value);
+        
+        if (selectedIds.length === 0) {
+            showToast('No hay notas seleccionadas', 'error');
+            return;
+        }
+
+        if (!confirm(`¿Estás seguro de que quieres eliminar ${selectedIds.length} notas?`)) return;
+
+        try {
+            const response = await fetch("/api/notes", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ ids: selectedIds }),
+            });
+
+            if (response.ok) {
+                showToast('Notas eliminadas', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            } else {
+                showToast('Error al eliminar las notas', 'error');
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            showToast('Error de conexión', 'error');
+        }
+    });
 </script>

@@ -99,3 +99,97 @@ export const POST: APIRoute = async ({ request, redirect }) => {
         });
     }
 };
+
+export const PUT: APIRoute = async ({ request }) => {
+    const session = await auth.api.getSession({
+        headers: request.headers,
+    });
+
+    if (!session) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
+    try {
+        const body = await request.json();
+        const { id, title, category, link, content } = body;
+
+        if (!id) {
+            return new Response(JSON.stringify({ error: "Note ID is required" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        // Update the note, ensuring it belongs to the current user
+        const result = await query(
+            'UPDATE notes SET title = $1, category = $2, link = $3, content = $4 WHERE id = $5 AND user_id = $6 RETURNING *',
+            [title, category, link, content, id, session.user.id]
+        );
+
+        if (result.rows.length === 0) {
+            return new Response(JSON.stringify({ error: "Note not found or unauthorized" }), {
+                status: 404,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        return new Response(JSON.stringify({ success: true, note: result.rows[0] }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+
+    } catch (error) {
+        console.error("Error updating note:", error);
+        return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+};
+
+export const DELETE: APIRoute = async ({ request }) => {
+    const session = await auth.api.getSession({
+        headers: request.headers,
+    });
+
+    if (!session) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
+    try {
+        const body = await request.json();
+        const { ids } = body;
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return new Response(JSON.stringify({ error: "Note IDs are required" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        // Delete notes, ensuring they belong to the current user
+        const placeholders = ids.map((_, i) => `$${i + 2}`).join(', ');
+        const result = await query(
+            `DELETE FROM notes WHERE id IN (${placeholders}) AND user_id = $1 RETURNING id`,
+            [session.user.id, ...ids]
+        );
+
+        return new Response(JSON.stringify({ success: true, deletedCount: result.rows.length }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+
+    } catch (error) {
+        console.error("Error deleting notes:", error);
+        return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+};
