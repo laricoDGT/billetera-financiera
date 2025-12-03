@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Modal from "../components/Modal.astro";
+import Toast from "../components/Toast.astro";
 import { auth } from "../lib/auth";
 
 const session = await auth.api.getSession({
@@ -44,336 +45,29 @@ if (!session) {
             </button>
         </div>
 
-        <!-- Upcoming Reminders -->
-        <div class="mb-8">
-            <h2
-                class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
-            >
-                Próximos
-            </h2>
-            <div class="space-y-4">
+        <!-- Reminders Container -->
+        <div id="reminders-container" class="space-y-8">
+            <!-- Loading State -->
+            <div class="text-center py-12">
                 <div
-                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border-l-4 border-red-500"
+                    class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"
                 >
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-start space-x-3">
-                            <div
-                                class="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mt-1"
-                            >
-                                <svg
-                                    class="w-5 h-5 text-red-600"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    ></path>
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <h3
-                                    class="font-semibold text-gray-900 dark:text-white"
-                                >
-                                    Pago de Renta
-                                </h3>
-                                <p
-                                    class="text-sm text-gray-500 dark:text-gray-400"
-                                >
-                                    Vence mañana
-                                </p>
-                                <p
-                                    class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-1"
-                                >
-                                    $850.00
-                                </p>
-                            </div>
-                        </div>
-                        <button
-                            class="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg"
-                        >
-                            <svg
-                                class="w-5 h-5 text-gray-400"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                            >
-                                <path
-                                    d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
-                                ></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="mt-3 flex gap-2">
-                        <button
-                            class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-700 transition"
-                            >Pagar ahora</button
-                        >
-                        <button
-                            class="flex-1 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition"
-                            >Posponer</button
-                        >
-                    </div>
                 </div>
-
-                <div
-                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border-l-4 border-orange-500"
-                >
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-start space-x-3">
-                            <div
-                                class="w-10 h-10 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center mt-1"
-                            >
-                                <svg
-                                    class="w-5 h-5 text-orange-600"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                                    ></path>
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <h3
-                                    class="font-semibold text-gray-900 dark:text-white"
-                                >
-                                    Pago Tarjeta de Crédito
-                                </h3>
-                                <p
-                                    class="text-sm text-gray-500 dark:text-gray-400"
-                                >
-                                    Vence en 3 días
-                                </p>
-                                <p
-                                    class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-1"
-                                >
-                                    $2,100.00
-                                </p>
-                            </div>
-                        </div>
-                        <button
-                            class="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg"
-                        >
-                            <svg
-                                class="w-5 h-5 text-gray-400"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                            >
-                                <path
-                                    d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
-                                ></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="mt-3 flex gap-2">
-                        <button
-                            class="flex-1 bg-orange-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-orange-700 transition"
-                            >Pagar ahora</button
-                        >
-                        <button
-                            class="flex-1 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition"
-                            >Ver detalles</button
-                        >
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Active Reminders -->
-        <div>
-            <h2
-                class="text-lg font-semibold text-gray-900 dark:text-white mb-4"
-            >
-                Activos
-            </h2>
-            <div class="grid md:grid-cols-2 gap-4">
-                <div
-                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border border-gray-200 dark:border-slate-700"
-                >
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-2xl">💡</span>
-                            <div>
-                                <h3
-                                    class="font-semibold text-gray-900 dark:text-white"
-                                >
-                                    Factura de Luz
-                                </h3>
-                                <p
-                                    class="text-xs text-gray-500 dark:text-gray-400"
-                                >
-                                    Cada 25 del mes
-                                </p>
-                            </div>
-                        </div>
-                        <label
-                            class="relative inline-flex items-center cursor-pointer"
-                        >
-                            <input
-                                type="checkbox"
-                                checked
-                                class="sr-only peer"
-                            />
-                            <div
-                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
-                            >
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-gray-600 dark:text-gray-400"
-                            >~$120.00</span
-                        >
-                        <span class="text-indigo-600 font-medium"
-                            >En 5 días</span
-                        >
-                    </div>
-                </div>
-
-                <div
-                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border border-gray-200 dark:border-slate-700"
-                >
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-2xl">💧</span>
-                            <div>
-                                <h3
-                                    class="font-semibold text-gray-900 dark:text-white"
-                                >
-                                    Factura de Agua
-                                </h3>
-                                <p
-                                    class="text-xs text-gray-500 dark:text-gray-400"
-                                >
-                                    Cada 10 del mes
-                                </p>
-                            </div>
-                        </div>
-                        <label
-                            class="relative inline-flex items-center cursor-pointer"
-                        >
-                            <input
-                                type="checkbox"
-                                checked
-                                class="sr-only peer"
-                            />
-                            <div
-                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
-                            >
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-gray-600 dark:text-gray-400"
-                            >~$45.00</span
-                        >
-                        <span class="text-green-600 font-medium"
-                            >En 19 días</span
-                        >
-                    </div>
-                </div>
-
-                <div
-                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border border-gray-200 dark:border-slate-700"
-                >
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-2xl">📱</span>
-                            <div>
-                                <h3
-                                    class="font-semibold text-gray-900 dark:text-white"
-                                >
-                                    Plan Móvil
-                                </h3>
-                                <p
-                                    class="text-xs text-gray-500 dark:text-gray-400"
-                                >
-                                    Cada 5 del mes
-                                </p>
-                            </div>
-                        </div>
-                        <label
-                            class="relative inline-flex items-center cursor-pointer"
-                        >
-                            <input
-                                type="checkbox"
-                                checked
-                                class="sr-only peer"
-                            />
-                            <div
-                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
-                            >
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-gray-600 dark:text-gray-400"
-                            >$35.00</span
-                        >
-                        <span class="text-green-600 font-medium"
-                            >En 14 días</span
-                        >
-                    </div>
-                </div>
-
-                <div
-                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border border-gray-200 dark:border-slate-700"
-                >
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-2xl">🎵</span>
-                            <div>
-                                <h3
-                                    class="font-semibold text-gray-900 dark:text-white"
-                                >
-                                    Spotify Premium
-                                </h3>
-                                <p
-                                    class="text-xs text-gray-500 dark:text-gray-400"
-                                >
-                                    Cada 15 del mes
-                                </p>
-                            </div>
-                        </div>
-                        <label
-                            class="relative inline-flex items-center cursor-pointer"
-                        >
-                            <input
-                                type="checkbox"
-                                checked
-                                class="sr-only peer"
-                            />
-                            <div
-                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"
-                            >
-                            </div>
-                        </label>
-                    </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-gray-600 dark:text-gray-400"
-                            >$9.99</span
-                        >
-                        <span class="text-green-600 font-medium"
-                            >En 24 días</span
-                        >
-                    </div>
-                </div>
+                <p class="mt-4 text-gray-500">Cargando recordatorios...</p>
             </div>
         </div>
     </div>
 
     <Modal />
+    <Toast />
 
-    <template id="add-reminder-template">
+    <!-- Template for Add/Edit Reminder -->
+    <template id="reminder-form-template">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            <h3
+                class="text-xl font-bold text-gray-900 dark:text-white"
+                id="modal-title"
+            >
                 Nuevo Recordatorio
             </h3>
             <button
@@ -394,10 +88,8 @@ if (!session) {
                 </svg>
             </button>
         </div>
-        <form
-            class="space-y-4"
-            onsubmit="event.preventDefault(); closeModal(); alert('Funcionalidad de recordatorios próximamente');"
-        >
+        <form id="reminder-form" class="space-y-4">
+            <input type="hidden" name="id" id="reminder-id" />
             <div>
                 <label
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
@@ -405,6 +97,9 @@ if (!session) {
                 >
                 <input
                     type="text"
+                    name="title"
+                    id="reminder-title"
+                    required
                     placeholder="Ej: Pago de Internet"
                     class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
                 />
@@ -416,6 +111,9 @@ if (!session) {
                 >
                 <input
                     type="number"
+                    name="amount"
+                    id="reminder-amount"
+                    step="0.01"
                     placeholder="0.00"
                     class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
                 />
@@ -427,6 +125,9 @@ if (!session) {
                 >
                 <input
                     type="date"
+                    name="due_date"
+                    id="reminder-date"
+                    required
                     class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
                 />
             </div>
@@ -436,43 +137,394 @@ if (!session) {
                     >Frecuencia</label
                 >
                 <select
+                    name="frequency"
+                    id="reminder-frequency"
                     class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
                 >
-                    <option>Una vez</option>
-                    <option>Semanal</option>
-                    <option>Mensual</option>
-                    <option>Anual</option>
+                    <option value="once">Una vez</option>
+                    <option value="weekly">Semanal</option>
+                    <option value="monthly">Mensual</option>
+                    <option value="yearly">Anual</option>
                 </select>
             </div>
-            <div class="flex gap-3 pt-4">
-                <button
-                    type="submit"
-                    class="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
-                    >Crear</button
-                >
+            <div class="flex justify-end space-x-3 mt-6">
                 <button
                     type="button"
                     onclick="closeModal()"
-                    class="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition font-medium"
-                    >Cancelar</button
+                    class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition"
                 >
+                    Cancelar
+                </button>
+                <button
+                    type="submit"
+                    id="save-reminder-btn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <svg
+                        id="save-spinner"
+                        class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"></circle>
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                    <span id="save-text">Guardar</span>
+                </button>
             </div>
         </form>
     </template>
 
     <script>
+        // Declare global showToast function
+        declare global {
+            interface Window {
+                showToast: (
+                    message: string,
+                    type?: "success" | "error" | "info" | "warning",
+                ) => void;
+            }
+        }
+
+        let reminders = [];
+
+        async function fetchReminders() {
+            try {
+                const response = await fetch("/api/reminders");
+                if (!response.ok) throw new Error("Failed to fetch reminders");
+                reminders = await response.json();
+                renderReminders();
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("reminders-container").innerHTML = `
+                    <div class="text-center py-12 text-red-500">
+                        Error al cargar recordatorios. Por favor recarga la página.
+                    </div>
+                `;
+                window.showToast("Error al cargar recordatorios", "error");
+            }
+        }
+
+        function renderReminders() {
+            const container = document.getElementById("reminders-container");
+
+            // Sort reminders: Upcoming (unpaid) first, then paid
+            const upcoming = reminders
+                .filter((r) => !r.is_paid)
+                .sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+            const active = reminders.filter((r) => r.is_paid); // Or maybe active recurring ones? Let's stick to Paid vs Unpaid for now as per mockup logic
+
+            // Actually, the mockup had "Upcoming" (red/orange alerts) and "Active" (list of recurring items).
+            // Let's interpret:
+            // "Upcoming": Items due soon that are NOT paid.
+            // "Active": All items that are active (recurring or not paid yet), displayed in a grid.
+
+            // Let's simplify:
+            // Section 1: "Próximos" -> Items due within 7 days that are NOT paid.
+            // Section 2: "Todos" -> All active reminders.
+
+            const now = new Date();
+            const nextWeek = new Date();
+            nextWeek.setDate(now.getDate() + 7);
+
+            const urgent = reminders.filter(
+                (r) =>
+                    !r.is_paid &&
+                    new Date(r.due_date) <= nextWeek &&
+                    new Date(r.due_date) >=
+                        new Date(now.setDate(now.getDate() - 1)),
+            ); // Include today/yesterday overdue
+
+            let html = "";
+
+            // Urgent Section
+            if (urgent.length > 0) {
+                html += `
+                    <div class="mb-8">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Próximos Vencimientos</h2>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            ${urgent.map((r) => renderUrgentCard(r)).join("")}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // All Reminders Grid
+            html += `
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Todos los Recordatorios</h2>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        ${reminders.map((r) => renderStandardCard(r)).join("")}
+                    </div>
+                    ${
+                        reminders.length === 0
+                            ? `
+                        <div class="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-gray-300 dark:border-slate-700">
+                            <p class="text-gray-500 dark:text-gray-400">No tienes recordatorios aún.</p>
+                            <button onclick="openAddReminderModal()" class="mt-4 text-indigo-600 hover:text-indigo-700 font-medium">Crear el primero</button>
+                        </div>
+                    `
+                            : ""
+                    }
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function renderUrgentCard(reminder) {
+            const dueDate = new Date(reminder.due_date);
+            const daysUntil = Math.ceil(
+                (dueDate - new Date()) / (1000 * 60 * 60 * 24),
+            );
+            const isOverdue = daysUntil < 0;
+            const isToday = daysUntil === 0;
+
+            const colorClass = isOverdue || isToday ? "red" : "orange";
+
+            return `
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border-l-4 border-${colorClass}-500">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-10 h-10 bg-${colorClass}-100 dark:bg-${colorClass}-900/20 rounded-lg flex items-center justify-center mt-1">
+                                <span class="text-xl">⏰</span>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900 dark:text-white">${reminder.title}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    ${isOverdue ? `Venció hace ${Math.abs(daysUntil)} días` : isToday ? "Vence hoy" : `Vence en ${daysUntil} días`}
+                                </p>
+                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-1">$${parseFloat(reminder.amount).toFixed(2)}</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                             <button onclick="editReminder(${reminder.id})" class="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg text-gray-400 hover:text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <button onclick="markAsPaid(${reminder.id})" class="flex-1 bg-${colorClass}-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-${colorClass}-700 transition">
+                            Marcar Pagado
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStandardCard(reminder) {
+            const dueDate = new Date(reminder.due_date);
+            const daysUntil = Math.ceil(
+                (dueDate - new Date()) / (1000 * 60 * 60 * 24),
+            );
+
+            return `
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-4 border border-gray-200 dark:border-slate-700 opacity-${reminder.is_paid ? "60" : "100"}">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl">${getIconForFrequency(reminder.frequency)}</span>
+                            <div>
+                                <h3 class="font-semibold text-gray-900 dark:text-white ${reminder.is_paid ? "line-through" : ""}">${reminder.title}</h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">${getFrequencyLabel(reminder.frequency)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="editReminder(${reminder.id})" class="text-gray-400 hover:text-indigo-500 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                             <button onclick="deleteReminder(${reminder.id})" class="text-gray-400 hover:text-red-500 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" ${reminder.is_paid ? "checked" : ""} onchange="togglePaid(${reminder.id}, this.checked)" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-600 dark:text-gray-400">$${parseFloat(reminder.amount).toFixed(2)}</span>
+                        <span class="${reminder.is_paid ? "text-green-600" : "text-indigo-600"} font-medium">
+                            ${reminder.is_paid ? "Pagado" : daysUntil < 0 ? `Venció hace ${Math.abs(daysUntil)} días` : `En ${daysUntil} días`}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getIconForFrequency(freq) {
+            switch (freq) {
+                case "weekly":
+                    return "📅";
+                case "monthly":
+                    return "🗓️";
+                case "yearly":
+                    return "🎂";
+                default:
+                    return "📌";
+            }
+        }
+
+        function getFrequencyLabel(freq) {
+            switch (freq) {
+                case "weekly":
+                    return "Semanal";
+                case "monthly":
+                    return "Mensual";
+                case "yearly":
+                    return "Anual";
+                default:
+                    return "Una vez";
+            }
+        }
+
+        // --- Modal & Form Logic ---
+
         window.openAddReminderModal = function () {
-            const template = document.getElementById("add-reminder-template");
+            const template = document.getElementById("reminder-form-template");
             const content = document.getElementById("modal-content");
             const overlay = document.getElementById("modal-overlay");
 
             content.innerHTML = template.innerHTML;
+
+            // Setup Form Submit
+            const form = document.getElementById("reminder-form");
+            form.onsubmit = handleFormSubmit;
+
             overlay.classList.remove("hidden");
+        };
+
+        window.editReminder = function (id) {
+            const reminder = reminders.find((r) => r.id === id);
+            if (!reminder) return;
+
+            openAddReminderModal();
+
+            document.getElementById("modal-title").textContent =
+                "Editar Recordatorio";
+            document.getElementById("reminder-id").value = reminder.id;
+            document.getElementById("reminder-title").value = reminder.title;
+            document.getElementById("reminder-amount").value = reminder.amount;
+            document.getElementById("reminder-date").value =
+                reminder.due_date.split("T")[0];
+            document.getElementById("reminder-frequency").value =
+                reminder.frequency;
         };
 
         window.closeModal = function () {
             const overlay = document.getElementById("modal-overlay");
             overlay.classList.add("hidden");
         };
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            const isEdit = !!data.id;
+            const url = "/api/reminders";
+            const method = isEdit ? "PUT" : "POST";
+
+            const btn = document.getElementById("save-reminder-btn");
+            const spinner = document.getElementById("save-spinner");
+            const text = document.getElementById("save-text");
+
+            if (!btn || !spinner || !text) return;
+
+            // Loading state
+            // @ts-ignore
+            btn.disabled = true;
+            spinner.classList.remove("hidden");
+            text.textContent = "Guardando...";
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) throw new Error("Failed to save reminder");
+
+                closeModal();
+                fetchReminders();
+                window.showToast(
+                    "Recordatorio guardado exitosamente",
+                    "success",
+                );
+            } catch (error) {
+                console.error("Error:", error);
+                window.showToast("Error al guardar el recordatorio", "error");
+            } finally {
+                // Reset state
+                if (btn) {
+                    // @ts-ignore
+                    btn.disabled = false;
+                    spinner.classList.add("hidden");
+                    text.textContent = "Guardar";
+                }
+            }
+        }
+
+        // --- Actions ---
+
+        window.markAsPaid = async function (id) {
+            await togglePaid(id, true);
+        };
+
+        window.togglePaid = async function (id, isPaid) {
+            try {
+                const response = await fetch("/api/reminders", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id, is_paid: isPaid }),
+                });
+
+                if (!response.ok) throw new Error("Failed to update status");
+                fetchReminders();
+                window.showToast(
+                    isPaid
+                        ? "Recordatorio marcado como pagado"
+                        : "Recordatorio marcado como pendiente",
+                    "success",
+                );
+            } catch (error) {
+                console.error("Error:", error);
+                window.showToast("Error al actualizar el estado", "error");
+            }
+        };
+
+        window.deleteReminder = async function (id) {
+            if (!confirm("¿Estás seguro de eliminar este recordatorio?"))
+                return;
+
+            try {
+                const response = await fetch(`/api/reminders?id=${id}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id }), // Fallback
+                });
+
+                if (!response.ok) throw new Error("Failed to delete");
+                fetchReminders();
+                window.showToast("Recordatorio eliminado", "success");
+            } catch (error) {
+                console.error("Error:", error);
+                window.showToast("Error al eliminar", "error");
+            }
+        };
+
+        // Initialize
+        fetchReminders();
     </script>
 </Layout>
